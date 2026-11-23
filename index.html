@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b2623">
+  <meta name="description" content="Rosco 4D Andalucía: 216 preguntas sobre Andalucía para 1.º, 2.º, 3.º y 4.º de ESO. Juego interactivo para pizarras digitales, sin conexión a internet.">
+  <title>Rosco 4D · Día de la Bandera de Andalucía · IES Sidón</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css?v=4">
+  <script src="js/questions.js" defer></script>
+  <script src="js/app.js?v=4" defer></script>
+</head>
+<body>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12"/></symbol>
+    <symbol id="i-volume-off" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm5 4 5 6m0-6-5 6"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.7 2.7 0 1 1 5.1 1.2c-.7 1-2.6 1.4-2.6 3.4m0 3h.01"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14m8-14v14"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.5 6.2M3 4v7h7"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6M10 15v6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
+    <symbol id="i-skip" viewBox="0 0 24 24"><path d="m5 5 10 7-10 7V5Zm13 0v14"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Zm10-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M5 12h14"/></symbol>
+    <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 3h10v6a5 5 0 0 1-10 0V3ZM7 5H4v3a4 4 0 0 0 4 4m9-7h3v3a4 4 0 0 1-4 4m-4 2v5m-5 2h10"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 7V3h10v4M7 17H4v-8h16v8h-3M7 13h10v8H7z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m4 20 4.5-1 11-11-3.5-3.5-11 11L4 20Zm9-12 3.5 3.5"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 21V3m0 2c3-3 7 2 11 0s5-1 5-1v12s-2-1-5 1-8-3-11 0"/></symbol>
+  </svg>
+
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="site-header">
+      <div class="brand-group">
+        <div class="school-identity prominent" title="IES Sidón · Medina Sidonia, Cádiz">
+          <span class="school-logo-frame"><img src="assets/logo-ies-sidon.png" alt="Escudo del IES Sidón" width="77" height="84"></span>
+          <span class="school-titles"><strong>IES SIDÓN</strong><small>MEDINA SIDONIA · CÁDIZ</small></span>
+        </div>
+        <div class="brand" aria-label="Rosco 4D Andalucía">
+          <span class="brand-titles"><strong>ROSCO<span class="brand-emphasis">4D</span></strong><small>ANDALUCÍA · DÍA DE LA BANDERA</small></span>
+        </div>
+      </div>
+      <nav class="top-actions" aria-label="Herramientas">
+        <span class="header-commemoration"><span class="header-dot"></span> DÍA DE LA BANDERA · 4 DICIEMBRE</span>
+        <button class="icon-btn" type="button" id="helpButton" title="Cómo jugar" aria-label="Cómo jugar"><svg><use href="#i-help"/></svg></button>
+        <button class="icon-btn" type="button" id="soundButton" title="Activar o desactivar sonido" aria-label="Activar o desactivar sonido" aria-pressed="true"><svg><use href="#i-volume"/></svg></button>
+        <button class="icon-btn" type="button" id="fullscreenButton" title="Pantalla completa (F11 también funciona)" aria-label="Pantalla completa"><svg><use href="#i-expand"/></svg></button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="screen setup-screen" id="setupScreen" aria-labelledby="setupHeading">
+        <div class="setup-layout">
+          <div class="setup-lead">
+            <p class="eyebrow"><span class="eyebrow-line"></span> JUEGA · APRENDE · CELEBRA</p>
+            <h1 id="setupHeading">Andalucía, <span>letra a letra.</span></h1>
+            <p class="setup-description">27 letras por equipo, con preguntas diferentes. Cuatro niveles y un viaje por nuestra historia, nuestros paisajes y nuestra cultura. ¿Cuánto sabes de Andalucía?</p>
+            <div class="stat-ribbon" aria-label="Características del juego">
+              <div><strong>27</strong><span>letras por rosco</span></div>
+              <span class="stat-separator"></span>
+              <div><strong>216</strong><span>preguntas · 2 equipos</span></div>
+              <span class="stat-separator"></span>
+              <div><strong>4</strong><span>niveles de ESO</span></div>
+            </div>
+            <div class="history-note">
+              <span class="history-icon"><svg><use href="#i-flag"/></svg></span>
+              <p><strong>¿Por qué el 4 de diciembre?</strong> En 1977, miles de andaluces y andaluzas se manifestaron para reclamar la autonomía. Hoy recordamos aquella fecha con el Día de la Bandera.</p>
+            </div>
+          </div>
+          <div class="welcome-wheel" aria-hidden="true"><div class="welcome-orbit" id="previewOrbit"></div><div class="welcome-center"><span class="welcome-flag flag-horizontal"><i></i><i></i><i></i></span><span>4<span>D</span></span><small>ANDALUCÍA</small></div><span class="sparkle sparkle-a">✦</span><span class="sparkle sparkle-b">✧</span></div>
+        </div>
+
+        <div class="setup-panel" aria-label="Preparar partida">
+          <div class="setup-panel-heading"><div><p class="section-index">01 / ELIGE TU CURSO</p><h2>¿En qué nivel jugamos?</h2></div><span class="panel-label">DIFICULTAD PROGRESIVA</span></div>
+          <div class="level-grid" id="levelGrid" role="group" aria-label="Selecciona nivel de dificultad">
+            <button type="button" class="level-card is-selected" data-level="1" aria-pressed="true"><span class="level-top"><span class="level-number">01</span><span class="level-mark">✓</span></span><strong>1.º ESO</strong><span class="level-description">Descubre Andalucía</span><small>Provincias, símbolos y tradiciones</small></button>
+            <button type="button" class="level-card" data-level="2" aria-pressed="false"><span class="level-top"><span class="level-number">02</span><span class="level-mark">✓</span></span><strong>2.º ESO</strong><span class="level-description">Explora su riqueza</span><small>Geografía, arte y patrimonio</small></button>
+            <button type="button" class="level-card" data-level="3" aria-pressed="false"><span class="level-top"><span class="level-number">03</span><span class="level-mark">✓</span></span><strong>3.º ESO</strong><span class="level-description">Conoce su historia</span><small>Instituciones, historia y cultura</small></button>
+            <button type="button" class="level-card" data-level="4" aria-pressed="false"><span class="level-top"><span class="level-number">04</span><span class="level-mark">✓</span></span><strong>4.º ESO</strong><span class="level-description">Pon a prueba tus conocimientos</span><small>Autonomía, historia y legado</small></button>
+          </div>
+          <div class="settings-row">
+            <fieldset class="setting-group"><legend>MODALIDAD</legend><div class="segmented" id="modeOptions"><button class="selected" type="button" data-mode="solo" aria-pressed="true">Toda la clase</button><button type="button" data-mode="duel" aria-pressed="false">Duelo · 2 equipos</button></div></fieldset>
+            <div class="setting-group"><label for="timeSelect">TIEMPO DE JUEGO</label><select id="timeSelect"><option value="0">Sin límite</option><option value="180">3 minutos</option><option value="300" selected>5 minutos</option><option value="480">8 minutos</option><option value="720">12 minutos</option></select></div>
+            <div class="setup-launch"><button id="startButton" type="button" class="primary-btn start-btn">¡Comenzar rosco! <svg><use href="#i-chevron"/></svg></button></div>
+          </div>
+          <div class="solo-bank-row" id="soloBankRow"><label for="soloBankSelect">Banco de preguntas para «Toda la clase»</label><select id="soloBankSelect"><option value="green">Equipo verde · 27 preguntas</option><option value="white">Equipo blanco · 27 preguntas diferentes</option></select><small>En duelo, ambos bancos se utilizan a la vez y cada equipo empieza por la A.</small></div>
+          <div class="setup-footer"><span><span class="offline-dot"></span> Funciona sin conexión · Ideal para PDI y pantallas táctiles</span><div><button class="plain-link" id="editorButton" type="button"><svg><use href="#i-edit"/></svg> Editor docente</button><button class="plain-link" id="printButton" type="button"><svg><use href="#i-print"/></svg> Solucionario</button></div></div>
+          <div class="resume-banner is-hidden" id="resumeBanner"><span>Hay una partida sin terminar guardada en este dispositivo.</span><button class="secondary-btn" id="resumeButton" type="button">Continuar partida <svg><use href="#i-chevron"/></svg></button><button id="discardButton" class="plain-link" type="button">Descartar</button></div>
+        </div>
+      </section>
+
+      <section class="screen game-screen is-hidden" id="gameScreen" aria-labelledby="gameTitle">
+        <div class="game-toolbar"><div class="game-breadcrumb"><button type="button" class="back-button" id="backButton"><svg><use href="#i-arrow-left"/></svg> Inicio</button><span class="breadcrumb-divider"></span><span class="course-chip" id="gameLevelChip">1.º ESO</span><span class="mode-chip" id="gameModeChip">CLASE COMPLETA</span></div><div class="game-tools"><button type="button" id="restartButton" class="toolbar-btn" title="Reiniciar partida"><svg><use href="#i-reset"/></svg><span>Reiniciar</span></button><button type="button" id="pauseButton" class="toolbar-btn"><svg><use href="#i-pause"/></svg><span>Pausar</span></button><div class="timer-display" id="timerDisplay" aria-label="Tiempo restante" role="timer"><span class="timer-caption">TIEMPO</span><strong id="timeValue">05:00</strong></div></div></div>
+        <div class="board-layout">
+          <section class="rosco-zone" aria-label="Rosco de 27 letras"><div class="rosco-bg"></div><div class="rosco-frame" id="roscoFrame"><div class="rosco-letters" id="roscoLetters"></div><div class="rosco-core"><div class="core-flag flag-horizontal" aria-hidden="true"><i></i><i></i><i></i></div><div class="core-label">ROSCO</div><div class="core-title">4<span>D</span></div><div class="core-name">ANDALUCÍA</div><div class="core-subtext">DÍA DE LA BANDERA</div><div class="core-division"></div><div class="core-progress"><strong id="coreCorrect">0</strong><span>de 27 aciertos</span></div></div></div><div class="legend"><span><i class="legend-dot is-active"></i> Actual</span><span><i class="legend-dot is-correct"></i> Acierto</span><span><i class="legend-dot is-wrong"></i> Fallo</span><span><i class="legend-dot is-pending"></i> Pendiente</span></div></section>
+          <section class="question-zone" aria-labelledby="gameTitle"><div class="question-topline"><div><p class="question-eyebrow" id="questionCounter">PREGUNTA 1 DE 27</p><h2 id="gameTitle">¡Vamos a por el rosco!</h2></div><div class="letter-mini" id="letterMini">A</div></div><div class="question-rule"><span class="question-rule-dot"></span><span id="letterRule">EMPIEZA POR LA A</span></div><p class="question-body" id="questionText">Selecciona un nivel para comenzar.</p><div class="answer-input-block"><label for="answerInput">RESPUESTA ESCRITA (OPCIONAL)</label><div class="answer-input-row"><input id="answerInput" type="text" autocomplete="off" spellcheck="false" placeholder="Escribe aquí o responde en voz alta…"><button type="button" id="checkInputButton" class="check-input-btn">Comprobar</button></div><p class="input-help">En la PDI, la clase puede responder en voz alta y el docente marca el resultado.</p></div><div class="feedback-card is-hidden" id="feedbackCard" role="status" aria-live="polite"><div class="feedback-top"><span class="feedback-icon" id="feedbackIcon">✓</span><strong id="feedbackTitle">¡Correcto!</strong><span class="feedback-answer" id="feedbackAnswer"></span></div><p id="feedbackFact"></p></div><div class="reveal-card is-hidden" id="revealCard"><small>SOLUCIÓN (NO SE PUNTÚA AL MOSTRARLA)</small><strong id="revealAnswer"></strong></div><div class="question-actions" id="questionActions"><button type="button" class="action-btn answer-correct" id="correctButton"><svg><use href="#i-check"/></svg><span>Correcto</span></button><button type="button" class="action-btn answer-wrong" id="wrongButton"><svg><use href="#i-cross"/></svg><span>Fallo</span></button><button type="button" class="action-btn answer-pass" id="passButton"><svg><use href="#i-skip"/></svg><span>Pasapalabra</span></button></div><div class="question-actions is-hidden" id="nextActions"><button type="button" class="primary-btn next-btn" id="nextButton">Siguiente letra <svg><use href="#i-chevron"/></svg></button></div><div class="question-end"><button id="revealButton" type="button" class="plain-link reveal-link"><svg><use href="#i-eye"/></svg> Ver solución</button><span class="keyboard-hint">Atajos: <kbd>A</kbd> acierto · <kbd>F</kbd> fallo · <kbd>P</kbd> pasar · <kbd>Espacio</kbd> continuar/pausa</span></div></section>
+        </div>
+        <div class="scoreboard" id="scoreboard"><div class="score-main"><div class="score-label"><span class="scorebar-icon">✦</span><span id="progressLabel">PROGRESO DEL ROSCO</span></div><div class="score-fractions"><span><strong id="scoreCorrect">0</strong> aciertos</span><span><strong id="scoreWrong">0</strong> fallos</span><span><strong id="scorePending">27</strong> pendientes</span></div></div><div class="progress-track"><div id="progressCorrect" class="progress-correct"></div><div id="progressWrong" class="progress-wrong"></div></div><div class="teams-row is-hidden" id="teamsRow"><div class="team-badge active" id="teamOne"><span class="team-marker team-marker-one"></span><span>Equipo verde</span><div class="team-count"><strong id="teamOneScore">0</strong><small id="teamOneProgress">0/27 letras</small></div></div><div class="team-versus">VS</div><div class="team-badge" id="teamTwo"><span class="team-marker team-marker-two"></span><span>Equipo blanco</span><div class="team-count"><strong id="teamTwoScore">0</strong><small id="teamTwoProgress">0/27 letras</small></div></div><span class="team-instruction">Cada equipo tiene su propio rosco. Fallo o Pasapalabra: cambia el turno.</span></div></div>
+      </section>
+
+      <section class="screen end-screen is-hidden" id="endScreen" aria-labelledby="endTitle"><div class="end-container"><div class="end-icon"><svg><use href="#i-cup"/></svg></div><p class="eyebrow end-eyebrow">PARTIDA FINALIZADA · ROSCO 4D</p><h2 id="endTitle">¡Enhorabuena, Andalucía!</h2><p class="end-subtitle" id="endSubtitle">Habéis recorrido nuestro patrimonio, cultura e historia letra a letra.</p><div class="end-summary"><div><span>ACIERTOS</span><strong id="endCorrect">0</strong></div><div><span>FALLOS</span><strong id="endWrong">0</strong></div><div><span>SIN RESPONDER</span><strong id="endPending">27</strong></div><div><span>CURSO</span><strong id="endCourse">1.º</strong></div></div><div class="end-team-summary is-hidden" id="endTeamSummary"></div><div class="end-history"><h3>Así quedó vuestro rosco</h3><div class="end-letters" id="endLetters"></div></div><div class="end-actions"><button type="button" class="primary-btn" id="playAgainButton">Jugar otra vez <svg><use href="#i-chevron"/></svg></button><button type="button" class="secondary-btn" id="changeLevelButton">Elegir otro curso</button><button type="button" class="secondary-btn" id="endAnswersButton">Ver solucionario</button></div><p class="end-motto">«Andalucía por sí, para España y la Humanidad»</p></div></section>
+    </main>
+
+    <footer class="site-footer"><span><span class="footer-flag flag-horizontal" aria-hidden="true"><i></i><i></i><i></i></span> 4D · DÍA DE LA BANDERA DE ANDALUCÍA</span><span><strong>IES Sidón</strong> · Medina Sidonia · Cádiz · Recurso educativo para el 4D</span></footer>
+  </div>
+
+  <dialog id="helpDialog" class="app-dialog"><div class="dialog-head"><div><small>GUÍA RÁPIDA</small><h2>Cómo se juega</h2></div><button type="button" class="dialog-close" data-close="helpDialog" aria-label="Cerrar">×</button></div><div class="dialog-body"><p>El rosco reúne <strong>27 letras (incluida la Ñ)</strong>. Cada letra tiene una pregunta adaptada al curso elegido. El alumnado responde en voz alta y el profesor o la profesora controla la pantalla PDI, o bien se escribe la respuesta en la casilla.</p><div class="instruction-list"><div><span class="step-num">01</span><p><strong>Correcto</strong> pone la letra en verde; <strong>Fallo</strong> la pone en rojo.</p></div><div><span class="step-num">02</span><p><strong>Pasapalabra</strong> deja la letra pendiente para volver a ella más tarde.</p></div><div><span class="step-num">03</span><p><strong>Duelo</strong>: si un equipo acierta, conserva el turno y suma un punto. Si falla o pulsa «Pasapalabra», el turno pasa automáticamente al otro equipo. Cada equipo empieza por la A, recibe preguntas <strong>totalmente diferentes</strong> y conserva sus letras y su recorrido por separado.</p></div><div><span class="step-num">04</span><p>Cada equipo tiene 27 preguntas independientes (54 en total por duelo). Al mostrar el resultado se detiene el crono para comentar el dato educativo. Pulsa «Siguiente letra» para continuar.</p></div></div><div class="shortcut-panel"><strong>Atajos de teclado</strong><p><kbd>A</kbd> Acierto <kbd>F</kbd> Fallo <kbd>P</kbd> Pasapalabra <kbd>S</kbd> Solución <kbd>Espacio</kbd> Continuar o pausar</p></div><p class="dialog-small">Puedes tocar una letra pendiente para ir directamente a ella. El progreso se guarda automáticamente en este navegador. La aplicación funciona sin conexión una vez descargados sus archivos.</p></div><div class="dialog-footer"><button type="button" class="primary-btn" data-close="helpDialog">Entendido</button></div></dialog>
+
+  <dialog id="editorDialog" class="app-dialog editor-dialog"><div class="dialog-head"><div><small>IES SIDÓN · HERRAMIENTAS DOCENTES</small><h2>Editor de los dos roscos</h2></div><button type="button" class="dialog-close" data-close="editorDialog" aria-label="Cerrar">×</button></div>
+    <div class="dialog-body editor-body">
+      <p class="editor-intro">Edita <strong>por separado</strong> las 27 preguntas del equipo verde y las 27 del blanco en cada curso. Puedes elegir para cualquier letra <strong>«Empieza por» o «Contiene la»</strong>. Los cambios se guardan en este navegador; exporta el JSON para llevarlos a otras PDI.</p>
+      <div class="editor-selects editor-selects-v4">
+        <label>Curso <select id="editLevel"><option value="1">1.º ESO</option><option value="2">2.º ESO</option><option value="3">3.º ESO</option><option value="4">4.º ESO</option></select></label>
+        <label>Equipo <select id="editTeam"><option value="green">🟢 Equipo verde</option><option value="white">⚪ Equipo blanco</option></select></label>
+        <label>Letra <select id="editLetter"></select></label>
+      </div>
+      <div class="editor-subhead"><span class="editor-team-indicator green" id="editorTeamIndicator">EQUIPO VERDE</span><small id="editorSummary">54 preguntas por curso, dos bancos diferentes</small></div>
+      <div class="editor-alphabet" id="editorAlphabet" role="group" aria-label="Elegir letra para editar"></div>
+      <div class="editor-nav"><button type="button" class="secondary-btn" id="editorPrevious">← Letra anterior</button><span>La edición es independiente para cada equipo</span><button type="button" class="secondary-btn" id="editorNext">Letra siguiente →</button></div>
+      <form id="editorForm">
+        <label>Tipo de pista <select id="editMode"><option value="starts">Empieza por…</option><option value="contains">Contiene la…</option></select></label>
+        <label>Enunciado de la pregunta <textarea id="editClue" rows="3" maxlength="500" required></textarea></label>
+        <label>Respuesta correcta <input id="editAnswer" maxlength="120" required></label>
+        <label>Otras respuestas aceptadas (separadas por punto y coma) <input id="editAliases" placeholder="Por ejemplo: variante; nombre completo"></label>
+        <label>Explicación que aparece después de responder <textarea id="editFact" rows="3" maxlength="500"></textarea></label>
+        <div class="editor-live"><strong>Vista previa</strong><p id="editorPreview" aria-live="polite"></p><small id="editorCheck"></small></div>
+        <p class="editor-error" id="editorError" role="alert"></p>
+        <div class="editor-save-row"><button type="submit" class="primary-btn editor-save">Guardar esta pregunta</button><button type="button" class="secondary-btn" id="restoreQuestion">Restaurar esta letra</button></div>
+      </form>
+      <div class="editor-utilities"><button type="button" class="secondary-btn" id="exportQuestions">Exportar 216 preguntas (JSON)</button><label class="secondary-btn import-file-label" for="importQuestions">Importar banco JSON<input id="importQuestions" type="file" accept="application/json,.json" hidden></label><button type="button" class="plain-link editor-reset" id="resetQuestions">Restaurar los 8 roscos originales</button></div>
+      <p class="dialog-small">Si ya personalizaste preguntas en la V3, la V4 intenta conservarlas como banco del equipo verde. La partida guardada de la V3 no se puede continuar en la V4. Las preguntas editadas se aplican al iniciar una partida nueva, no a la que ya está abierta.</p>
+    </div>
+  </dialog>
+
+  <dialog id="confirmDialog" class="app-dialog confirm-dialog"><div class="dialog-head"><div><small>CONFIRMACIÓN</small><h2 id="confirmHeading">¿Seguro?</h2></div><button type="button" class="dialog-close" data-close="confirmDialog" aria-label="Cerrar">×</button></div><div class="dialog-body"><p id="confirmBody">Se perderá el progreso de esta partida.</p></div><div class="dialog-footer"><button type="button" class="secondary-btn" data-close="confirmDialog">Cancelar</button><button type="button" class="primary-btn" id="confirmYes">Sí, continuar</button></div></dialog>
+  <div class="toast is-hidden" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
