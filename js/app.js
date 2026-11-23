@@ -220,7 +220,22 @@
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
     renderAll();saveGame();
   }
-  function checkTyped(){if(!game || game.phase!=='running' || game.paused)return;const text=$('answerInput').value.trim();if(!text){notify('Escribe una respuesta o utiliza los botones del docente.');return;}const q=questionFor(game.cursor);const choices=[q.answer,...q.aliases];mark(choices.some(a=>norm(a)===norm(text))?'correct':'wrong');}
+  function checkTyped(){
+    if(!game || game.phase!=='running' || game.paused)return;
+    const text=$('answerInput').value.trim();
+    if(!text){notify('Escribe una respuesta o utiliza los botones del docente.');return;}
+    const entered=norm(text);
+    // Nunca aceptar una sola letra como acierto: evita respuestas parciales,
+    // alias mal configurados y teclados virtuales que pierden el foco.
+    if(entered.length<2){
+      mark('wrong');return;
+    }
+    const q=questionFor(game.cursor);
+    // Una respuesta es correcta SOLO si coincide COMPLETA con la solución
+    // o con una de sus alternativas (no por comenzar con la letra del rosco).
+    const choices=[q.answer,...q.aliases].map(norm).filter(value=>value.length>=2);
+    mark(choices.includes(entered)?'correct':'wrong');
+  }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
   function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
   function finishGame(reason){
@@ -417,8 +432,10 @@
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));
     $('editorPrevious').addEventListener('click',()=>editorNavigate(-1));
     $('editorNext').addEventListener('click',()=>editorNavigate(1));
-    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('keydown',handleKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
-  function handleKeys(e){const dialogOpen=!!document.querySelector('dialog[open]');if(dialogOpen)return;const tag=e.target?.tagName;if(['INPUT','TEXTAREA','SELECT'].includes(tag))return;if(e.key==='Escape'&&game&&screens.game&&!screens.game.classList.contains('is-hidden')){backToSetup();return;}if(!game||screens.game.classList.contains('is-hidden')||e.ctrlKey||e.altKey||e.metaKey)return;const key=e.key.toLowerCase();if(key===' '){e.preventDefault();game.phase==='feedback'?next():togglePause();return;}if(game.phase!=='running'||game.paused)return;if(key==='a')mark('correct');else if(key==='f')mark('wrong');else if(key==='p')pass();else if(key==='s')reveal();}
+    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('visibilitychange',()=>{if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
+  // SEGURIDAD DE EVALUACIÓN: sin atajos globales que puntúen al pulsar letras.
+  // Solo se evalúa con «Comprobar»/Intro DENTRO de la casilla de respuesta
+  // o con los botones explícitos de corrección del docente.
   function boot(){makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');}
   boot();
 })();

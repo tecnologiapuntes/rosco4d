@@ -1,4 +1,4 @@
-# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.1 (dificultades con arte)
+# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.3 (puntuación y entradas corregidas)
 
 **Edición sin cuentas ni nube**: basada directamente en la V4 aportada por el usuario. Funciona abriendo los archivos locales y en GitHub Pages.
 
@@ -26,11 +26,28 @@ La copia **JSON** es solo una copia de respaldo opcional; también puede importa
 
 Puedes abrir `GUIA_DOCENTE.html` para ver **instrucciones ilustradas paso a paso e imprimirlas**, o desde la portada pulsar «Ayuda para docentes». El botón de ayuda de la cabecera sigue explicando las reglas del juego.
 
+## Corrección V4.2 — importante
+
+Se eliminan **todos los atajos globales de una sola letra** (`A`, `F`, `P`, `S`) para impedir que pulsar una tecla fuera de la casilla de respuesta contabilice aciertos o fallos. También se elimina el atajo global de Espacio para evitar activar acciones cuando el foco está en botones de la PDI.
+
+- Tocar una letra de la rueda **solo selecciona la pregunta**, nunca cambia su puntuación.
+- En la casilla de respuesta, escribir una letra (por ejemplo `A`) no se considera respuesta correcta a `Alhambra`. La evaluación se realiza solamente con **Comprobar** o **Intro** dentro de la casilla.
+- Los botones **Correcto**, **Fallo** y **Pasapalabra** son de control manual por el docente; `Correcto` no comprueba automáticamente lo hablado en voz alta.
+- Los HTML portátiles descargados desde esta versión incluyen el mismo arreglo. **Los HTML que se descargaron con la V4.1 mantienen el fallo y deben generarse de nuevo** con la V4.3 si se quieren corregidos.
+
+## Corrección adicional V4.3
+
+Se impide que una respuesta de **una sola letra** («A», «F» o «P») pueda aceptarse como acierto cuando se pulsa «Comprobar»: aparece como **fallo**. La coincidencia se realiza contra la **respuesta completa** o sus alternativas, no contra la inicial de la letra del rosco.
+
+Las teclas A, F y P **no ejecutan ninguna acción** al pulsarlas fuera de la casilla de respuesta: ya no hay atajos de teclado para Correcto, Fallo o Pasapalabra. Al pulsar una letra del rosco con el ratón o con el dedo, **solo se muestra su pregunta** y no hay puntuación.
+
+**Si ya tienes un HTML para PDI descargado de la V4.1, debes volver a generarlo con la V4.3**, porque los HTML anteriores no se actualizan solos.
+
 ## Juego y marcador
 
 - «Toda la clase»: 27 preguntas del banco verde o blanco.
 - «Duelo»: cada equipo tiene su propia pregunta por letra, su marcador y su recorrido. Ambos comienzan en A. Fallo/Pasapalabra cambia de equipo. Acierto conserva el turno.
-- Cronómetro, accesos de teclado, opción de pantalla completa, sonido, respuesta oral/escrita, explicación de cada respuesta, solucionario e impresión.
+- Cronómetro, controles explícitos de corrección, opción de pantalla completa, sonido, respuesta oral/escrita, explicación de cada respuesta, solucionario e impresión.
 - Tanto el juego como el HTML personalizado funcionan sin Internet.
 
 ## Archivos
