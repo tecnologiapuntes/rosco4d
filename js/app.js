@@ -5,7 +5,7 @@
   const LETTERS = [...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'];
   const BASE_BANK = JSON.parse(JSON.stringify(window.ROSCO_QUESTIONS));
   const installationKey = window.ROSCO_STANDALONE ? '_portable_'+String(window.ROSCO_PORTABLE_ID||'default') : '_v4';
-  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v44'+installationKey,sound:'rosco4d_sound_v1'};
+  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v45'+installationKey,sound:'rosco4d_sound_v1'};
   const $ = (id) => document.getElementById(id);
   const ordinal = {1:"¡Con salero!",2:"¡Olé tu arte!",3:"¡Aquí hay duende!",4:"¡Quillo, qué nivelazo!"};
   const levelNames = {1:"Para entrar en compás",2:"La cosa se anima",3:"Hay que tener tablas",4:"Para auténticas eminencias"};
@@ -13,8 +13,26 @@
   const safeWrite = (key, value) => {try {localStorage.setItem(key,JSON.stringify(value));} catch { /* almacenamiento privado o desactivado */ }};
   const clone = (x) => JSON.parse(JSON.stringify(x));
   const norm = (s) => String(s ?? '').toLocaleLowerCase('es').replace(/ñ/g,'~n~').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/~n~/g,'ñ').replace(/[^a-z0-9ñ]/gi,'');
-  const testLetter = (q) => q.mode === 'starts' ? norm(q.answer).startsWith(norm(q.letter)) : norm(q.answer).includes(norm(q.letter));
-  const validEntry = (q,l) => q && q.letter===l && ['starts','contains'].includes(q.mode) && typeof q.answer==='string' && q.answer.trim() && typeof q.clue==='string' && q.clue.trim() && typeof q.fact==='string' && Array.isArray(q.aliases) && q.aliases.every(v => typeof v === 'string') && testLetter(q);
+  // Una solución o alternativa solo es válida si cumple el tipo de pista (con acentos normalizados).
+  const fitsLetter = (mode,letter,answer) => {
+    const word=norm(answer), l=norm(letter);
+    if(word.length<2 || !l)return false;
+    return mode==='starts' ? word.startsWith(l) : word.includes(l);
+  };
+  const testLetter = (q) => fitsLetter(q.mode,q.letter,q.answer);
+  const validEntry = (q,l) => q && q.letter===l && ['starts','contains'].includes(q.mode) && typeof q.answer==='string' && testLetter(q) && typeof q.clue==='string' && q.clue.trim() && typeof q.fact==='string' && Array.isArray(q.aliases) && q.aliases.every(v => typeof v==='string' && fitsLetter(q.mode,q.letter,v));
+  // Conserva las ediciones guardadas de versiones anteriores; solo descarta alternativas inválidas.
+  const cleanAliases = (data) => {
+    if(data && typeof data==='object')for(const l of [1,2,3,4]){
+      const group=data[l];
+      // Compatible tanto con el banco anterior de un solo equipo como con el nuevo doble.
+      const lists=Array.isArray(group)?[group]:['green','white'].map(t=>group?.[t]).filter(Array.isArray);
+      for(const list of lists)for(const q of list){
+        if(q && Array.isArray(q.aliases))q.aliases=q.aliases.filter(a=>typeof a==='string' && fitsLetter(q.mode,q.letter,a));
+      }
+    }
+    return data;
+  };
   const differentTeams = (data, level) => {
     const green=data[level].green,white=data[level].white;
     const answers=new Set(green.map(q=>norm(q.answer)));
@@ -24,12 +42,13 @@
     data[level] && ['green','white'].every(team => Array.isArray(data[level][team]) && data[level][team].length===27 &&
       data[level][team].every((q,i)=>validEntry(q,LETTERS[i]))) && differentTeams(data,level));
   const validOldBank = (data) => data && [1,2,3,4].every(l=>Array.isArray(data[l]) && data[l].length===27 && data[l].every((q,i)=>validEntry(q,LETTERS[i])));
-  let bank = safeRead(KEYS.bank);
+  let bank = cleanAliases(safeRead(KEYS.bank));
+  if (validBank(bank)) safeWrite(KEYS.bank,bank);
   if (!validBank(bank)) {
     bank=clone(BASE_BANK);
     const legacy=window.ROSCO_STANDALONE ? null : safeRead(KEYS.legacy);
     if (validOldBank(legacy)) {
-      for(const level of [1,2,3,4]) bank[level].green=clone(legacy[level]);
+      for(const level of [1,2,3,4]) bank[level].green=cleanAliases(clone(legacy[level]));
       if(validBank(bank))safeWrite(KEYS.bank,bank);
       else bank=clone(BASE_BANK);
     }
@@ -145,12 +164,13 @@
     $('questionText').textContent=q.clue;
     $('answerInput').disabled=inFeedback || game.paused;
     $('checkInputButton').disabled=inFeedback || game.paused;
-    $('correctButton').disabled=game.paused;
+    $('correctButton').disabled=game.paused || (!inFeedback && $('answerInput').value.trim().length>0);
     $('wrongButton').disabled=game.paused;
     $('passButton').disabled=game.paused;
     $('questionActions').classList.toggle('is-hidden',inFeedback);
     $('nextActions').classList.toggle('is-hidden',!inFeedback);
     $('answerInput').closest('.answer-input-block').classList.toggle('is-hidden',inFeedback);
+    $('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');
     $('revealButton').classList.toggle('is-hidden',inFeedback);
     $('revealCard').classList.add('is-hidden');$('answerInput').value='';
     $('feedbackCard').classList.toggle('is-hidden',!inFeedback);
@@ -163,6 +183,7 @@
         : (game.mode==='duel'?`Fallo · ahora juega el equipo ${teamName(game.activeTeam)}`:'¡Seguimos aprendiendo!');
       $('feedbackAnswer').textContent=`Respuesta: ${q.answer}`;
       $('feedbackFact').textContent=q.fact;
+      $('feedbackAttempt').textContent=game.feedbackSource==='typed' ? `Has escrito: «${game.feedbackInput||''}».` : 'Respuesta marcada por el docente (oral).';
       $('nextButton').textContent='';
       $('nextButton').textContent=game.mode==='duel' && !correct ? `Continuar con equipo ${teamName(game.activeTeam)} →` : 'Siguiente letra →';
     }
@@ -179,13 +200,18 @@
     $('teamOneProgress').textContent=game.mode==='duel'?`${27-remaining(0)}/27 letras`:'';
     $('teamTwoProgress').textContent=game.mode==='duel'?`${27-remaining(1)}/27 letras`:'';
   }
-  function mark(status){
+  function mark(status,source='teacher',typedText=''){
+    if(source==='teacher' && status==='correct' && $('answerInput').value.trim()){
+      $('answerValidation').textContent='Hay texto escrito: pulsa «Comprobar» o bórralo para corregir una respuesta oral.';
+      $('answerValidation').classList.remove('is-hidden');return;
+    }
     if(!game || game.phase!=='running' || game.paused)return;
     const oldTeam=game.activeTeam, oldIndex=game.cursor;
     if(statusesFor()[oldIndex]!=='pending')return;
     statusesFor()[oldIndex]=status;
     if(status==='correct')game.teamScores[oldTeam]++;
     game.feedback=status;game.feedbackCursor=oldIndex;game.feedbackTeam=oldTeam;
+    game.feedbackSource=source;game.feedbackInput=source==='typed'?typedText:'';
     if(game.mode==='duel'){
       // Al responder, este equipo queda preparado para continuar en SU siguiente letra.
       game.teamCursors[oldTeam]=nextPending(oldIndex,oldTeam);
@@ -220,24 +246,31 @@
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
     renderAll();saveGame();
   }
-  // Una entrada escrita NUNCA es un acierto por coincidir con la inicial.
-  // Debe ser la solución COMPLETA (o una alternativa completa expresamente guardada).
+  // V4.5: igualdad exacta con solución o alternativas completas que respetan la letra.
   function matchesFullAnswer(question, rawInput){
     const typed=norm(rawInput);
-    if(typed.length<2 || !question)return false;
+    if(!question || typed.length<2)return false;
     const candidates=[question.answer,...(Array.isArray(question.aliases)?question.aliases:[])];
     return candidates.some(candidate=>{
       const full=norm(candidate);
-      return full.length>=2 && typed===full;
+      return full.length>=2 && fitsLetter(question.mode,question.letter,candidate) && typed===full;
     });
   }
   function checkTyped(){
     if(!game || game.phase!=='running' || game.paused)return;
     const text=$('answerInput').value.trim();
-    if(!text){notify('Escribe una respuesta completa o usa los botones del docente.');return;}
+    const typed=norm(text);
+    if(typed.length<2){
+      // Ni un acierto ni un fallo: la entrada no es una respuesta (ej. «A» o «Q»).
+      $('answerInput').setAttribute('aria-invalid','true');
+      $('answerValidation').textContent=typed.length===0
+        ? 'Escribe la palabra o expresión completa antes de comprobar.'
+        : `«${text}» es una respuesta incompleta. Escribe la palabra entera: una sola letra nunca puntúa.`;
+      $('answerValidation').classList.remove('is-hidden');
+      return;
+    }
     const question=questionFor(game.cursor);
-    // Guardar una letra aislada como respuesta: fallo en las 27 letras.
-    mark(matchesFullAnswer(question,text)?'correct':'wrong');
+    mark(matchesFullAnswer(question,text)?'correct':'wrong','typed',text);
   }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
   function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
@@ -374,13 +407,13 @@
     const q=editorValues();const rule=q.mode==='starts'?`EMPIEZA POR LA ${q.letter}`:`CONTIENE LA ${q.letter}`;
     $('editorPreview').textContent=`${rule} · ${q.clue||'Escribe la pregunta...'} · Solución: ${q.answer||'pendiente'}`;
     const valid=validEntry(q,q.letter);
-    $('editorCheck').textContent=valid?'✓ La respuesta cumple la pista':`⚠ La respuesta debe ${q.mode==='starts'?'empezar por':'contener'} «${q.letter}».`;
+    $('editorCheck').textContent=valid?'✓ La solución y las alternativas cumplen la pista':`⚠ Comprueba la solución y las alternativas: deben ${q.mode==='starts'?'empezar por':'contener'} «${q.letter}».`;
     $('editorCheck').className='editor-check '+(valid?'valid':'invalid');
   }
   function saveEditor(ev){
     ev.preventDefault();const {level,team,letter}=editorLocation(),idx=LETTERS.indexOf(letter);const item=editorValues();
     if(!validEntry(item,letter)){
-      $('editorError').textContent=`Comprueba la pregunta y la respuesta: debe ${item.mode==='starts'?'empezar por':'contener'} la letra ${letter}.`;return;
+      $('editorError').textContent=`La respuesta y TODAS sus alternativas deben ${item.mode==='starts'?'empezar por':'contener'} la letra ${letter} y tener al menos dos caracteres.`;return;
     }
     const opposite=team==='green'?'white':'green';
     if(bank[level][opposite].some(q=>norm(q.answer)===norm(item.answer))){
@@ -429,7 +462,7 @@
   }
 
   // Eventos de interfaz.
-  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
+  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
     $('editTeam').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,e.target.value,editorSelection?.letter??'A'));
     $('editLetter').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,editorSelection?.team??'green',e.target.value));
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));

@@ -1,4 +1,3 @@
-// Rosco 4D Andalucía · IES Sidón · 216 preguntas: 27 × 2 equipos × 4 cursos.
 window.ROSCO_QUESTIONS = {
   "1": {
     "green": [
@@ -16,9 +15,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "¿Qué pensador andaluz es conocido como «Padre de la Patria Andaluza»? Escribe su nombre y apellido.",
         "answer": "Blas Infante",
         "fact": "Blas Infante impulsó los símbolos andaluces, como la bandera verdiblanca y la letra del himno.",
-        "aliases": [
-          "Infante"
-        ]
+        "aliases": []
       },
       {
         "letter": "C",
@@ -160,9 +157,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Nombre de la famosa romería que se celebra en una aldea de Almonte, en Huelva.",
         "answer": "Rocío",
         "fact": "La romería del Rocío es una de las celebraciones populares más conocidas de Andalucía.",
-        "aliases": [
-          "El Rocío"
-        ]
+        "aliases": []
       },
       {
         "letter": "S",
@@ -466,9 +461,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Conjunto monumental de Granada que fue residencia y fortaleza de gobernantes nazaríes.",
         "answer": "Alhambra",
         "fact": "La Alhambra reúne palacios, murallas, jardines e historia de la Granada andalusí.",
-        "aliases": [
-          "La Alhambra"
-        ]
+        "aliases": []
       },
       {
         "letter": "B",
@@ -943,9 +936,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Nombre que reciben las asambleas reunidas en Cádiz que aprobaron la Constitución española de 1812.",
         "answer": "Cortes de Cádiz",
         "fact": "La Constitución de 1812 fue aprobada por las Cortes reunidas en Cádiz.",
-        "aliases": [
-          "Las Cortes de Cádiz"
-        ]
+        "aliases": []
       },
       {
         "letter": "D",
@@ -1104,9 +1095,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Nombre del palacio sevillano que alberga la sede de la Presidencia de la Junta de Andalucía.",
         "answer": "San Telmo",
         "fact": "El Palacio de San Telmo se encuentra en Sevilla.",
-        "aliases": [
-          "Palacio de San Telmo"
-        ]
+        "aliases": []
       },
       {
         "letter": "T",
@@ -1243,9 +1232,7 @@ window.ROSCO_QUESTIONS = {
         "answer": "Ibn Rushd",
         "clue": "Nombre árabe de Averroes, célebre filósofo nacido en Córdoba en el siglo XII.",
         "fact": "Averroes, o Ibn Rushd, fue un filósofo andalusí vinculado a la Córdoba medieval.",
-        "aliases": [
-          "Averroes Ibn Rushd"
-        ]
+        "aliases": []
       },
       {
         "letter": "J",
@@ -1404,7 +1391,6 @@ window.ROSCO_QUESTIONS = {
         "answer": "Artículo 151",
         "fact": "Andalucía impulsó el acceso a la autonomía por la vía contemplada en el artículo 151 de la Constitución.",
         "aliases": [
-          "151",
           "Artículo 151 de la Constitución"
         ]
       },
@@ -1414,9 +1400,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Nombre y apellido del intelectual que impulsó la bandera, el escudo y la letra del himno andaluz.",
         "answer": "Blas Infante",
         "fact": "Blas Infante es reconocido como «Padre de la Patria Andaluza».",
-        "aliases": [
-          "Infante"
-        ]
+        "aliases": []
       },
       {
         "letter": "C",
@@ -1456,7 +1440,6 @@ window.ROSCO_QUESTIONS = {
         "answer": "Federico García Lorca",
         "fact": "Federico García Lorca nació en Fuente Vaqueros (Granada) en 1898.",
         "aliases": [
-          "Lorca",
           "Federico Garcia Lorca"
         ]
       },
@@ -1594,9 +1577,7 @@ window.ROSCO_QUESTIONS = {
         "clue": "Palacio de Sevilla que es sede de la Presidencia de la Junta de Andalucía.",
         "answer": "San Telmo",
         "fact": "El Palacio de San Telmo es la sede de la Presidencia de la Junta.",
-        "aliases": [
-          "Palacio de San Telmo"
-        ]
+        "aliases": []
       },
       {
         "letter": "T",
