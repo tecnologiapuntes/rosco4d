@@ -4,10 +4,11 @@
   'use strict';
   const LETTERS = [...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'];
   const BASE_BANK = JSON.parse(JSON.stringify(window.ROSCO_QUESTIONS));
-  const KEYS = {bank:'rosco4d_custom_bank_v4',legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v4',sound:'rosco4d_sound_v1'};
+  const installationKey = window.ROSCO_STANDALONE ? '_portable_'+String(window.ROSCO_PORTABLE_ID||'default') : '_v4';
+  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game'+installationKey,sound:'rosco4d_sound_v1'};
   const $ = (id) => document.getElementById(id);
-  const ordinal = {1:'1.º',2:'2.º',3:'3.º',4:'4.º'};
-  const levelNames = {1:'Descubre Andalucía',2:'Explora su riqueza',3:'Conoce su historia',4:'Pon a prueba tus conocimientos'};
+  const ordinal = {1:"¡Con salero!",2:"¡Olé tu arte!",3:"¡Aquí hay duende!",4:"¡Quillo, qué nivelazo!"};
+  const levelNames = {1:"Para entrar en compás",2:"La cosa se anima",3:"Hay que tener tablas",4:"Para auténticas eminencias"};
   const safeRead = (key) => {try {return JSON.parse(localStorage.getItem(key));} catch {return null;}};
   const safeWrite = (key, value) => {try {localStorage.setItem(key,JSON.stringify(value));} catch { /* almacenamiento privado o desactivado */ }};
   const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -26,7 +27,7 @@
   let bank = safeRead(KEYS.bank);
   if (!validBank(bank)) {
     bank=clone(BASE_BANK);
-    const legacy=safeRead(KEYS.legacy);
+    const legacy=window.ROSCO_STANDALONE ? null : safeRead(KEYS.legacy);
     if (validOldBank(legacy)) {
       for(const level of [1,2,3,4]) bank[level].green=clone(legacy[level]);
       if(validBank(bank))safeWrite(KEYS.bank,bank);
@@ -63,7 +64,7 @@
     const saved=getSavedGame();$('resumeBanner').classList.toggle('is-hidden',!saved);
     if(saved){
       const hits=saved.mode==='duel' ? saved.teamStatuses.reduce((sum,states)=>sum+states.filter(x=>x==='correct').length,0) : saved.statuses.filter(x=>x==='correct').length;
-      $('resumeBanner').querySelector('span').textContent=`Partida guardada: ${ordinal[saved.level]} ESO · ${hits} aciertos · ${saved.mode==='duel'?'2 equipos, roscos independientes':'clase completa'}.`;
+      $('resumeBanner').querySelector('span').textContent=`Partida guardada: ${ordinal[saved.level]} · ${hits} aciertos · ${saved.mode==='duel'?'2 equipos, roscos independientes':'clase completa'}.`;
     }
   }
   function chooseLevel(value){selectedLevel=value;document.querySelectorAll('.level-card').forEach(btn=>{const active=btn.dataset.level===value;btn.classList.toggle('is-selected',active);btn.setAttribute('aria-pressed',String(active));});}
@@ -80,7 +81,7 @@
       startedAt:new Date().toISOString(),reason:''};
     clearSavedGame();launchGame();
   }
-  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]} ESO`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
+  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
   function startTimer(){if(timerInterval!==null)clearInterval(timerInterval);lastTick=performance.now();timerInterval=setInterval(()=>{const now=performance.now(),delta=Math.max(0,Math.min(3000,now-lastTick));lastTick=now;if(!game || game.duration===0 || game.phase!=='running' || game.paused)return;game.remainingMs=Math.max(0,game.remainingMs-delta);renderTimer();if(now-lastPersist>2500){saveGame();lastPersist=now;}if(game.remainingMs<=0)finishGame('timeout');},200);}
   function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null;}}
   function timeLabel(){if(!game || !game.duration)return '∞';const seconds=Math.ceil(game.remainingMs/1000);return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
@@ -135,7 +136,7 @@
     const inFeedback=game.phase==='feedback';
     const index=inFeedback ? (game.feedbackCursor??game.cursor) : game.cursor;
     const q=questionFor(index,inFeedback ? game.feedbackTeam : game.activeTeam);
-    $('questionCounter').textContent=`LETRA ${index+1} DE 27 · ${ordinal[game.level]} ESO`;
+    $('questionCounter').textContent=`LETRA ${index+1} DE 27 · ${ordinal[game.level]}`;
     $('gameTitle').textContent=game.mode==='duel'
       ? (inFeedback ? `Respuesta del equipo ${teamName(game.feedbackTeam)}` : `Turno del equipo ${teamName(game.activeTeam)}`)
       : levelNames[game.level];
@@ -259,14 +260,62 @@
   function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
   function discard(){ask('¿Descartar la partida?','Se eliminará el progreso guardado en este navegador.',()=>{clearSavedGame();game=null;updateResume();notify('Partida descartada.');});}
   function fromNewGame(){const saved=getSavedGame();if(saved){ask('¿Comenzar de cero?','La partida guardada se sustituirá por una nueva.',initGame);}else initGame();}
-  function printAnswers(){const level=game?.level??selectedLevel;const team=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;window.open(`solucionario.html?curso=${encodeURIComponent(level)}&equipo=${encodeURIComponent(team)}`,'_blank','noopener');}
+
+  // Un único HTML portátil: el banco queda incrustado en el propio archivo.
+  function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+  function downloadBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+  function portableScript(){
+    const safe=JSON.stringify(bank).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+    const id='p'+Date.now().toString(36)+Math.floor(Math.random()*0xffff).toString(36);
+    return `window.ROSCO_STANDALONE = true;window.ROSCO_PORTABLE_ID=${JSON.stringify(id)};window.ROSCO_QUESTIONS = ${safe};`;
+  }
+  function downloadPortable(){
+    if(editorDirty){notify('Guarda primero la pregunta que estás editando.');$('editorError').textContent='Pulsa «Guardar esta pregunta» antes de preparar el HTML para la PDI.';return;}
+    let html;
+    if(window.ROSCO_PORTABLE_TEMPLATE_BASE64){
+      const raw=atob(window.ROSCO_PORTABLE_TEMPLATE_BASE64);
+      const bytes=Uint8Array.from(raw,ch=>ch.charCodeAt(0));
+      const template=new TextDecoder('utf-8').decode(bytes);
+      html=template.replace('/*__ROSCO_'+'PREGUNTAS_PORTATILES__*/',portableScript());
+    }else if(window.ROSCO_STANDALONE){
+      // El HTML portátil también puede volver a exportarse tras editarlo.
+      const doc=document.documentElement.cloneNode(true);
+      const script=doc.querySelector('#portableBank');
+      if(!script){notify('No se encuentra el banco de preguntas del archivo.');return;}
+      script.textContent=portableScript();
+      html='<!doctype html>\n'+doc.outerHTML;
+    }else{notify('No se encuentra el módulo de exportación. Comprueba que la carpeta js esté completa.');return;}
+    const today=new Date().toISOString().slice(0,10);
+    downloadBlob(new Blob([html],{type:'text/html;charset=utf-8'}),`ROSCO_4D_MIS_PREGUNTAS_PDI_${today}.html`);
+    notify('¡Listo! Descargado tu HTML personalizado. Ábrelo en la PDI.');
+  }
+  function printStandaloneAnswers(){
+    const level=game?.level??selectedLevel;
+    const chosen=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;
+    const teams=chosen==='both'?['green','white']:[chosen];
+    const title='Rosco 4D · Solucionario · '+ordinal[level];
+    const blocks=teams.map(team=>`<section class="team"><h2>${team==='green'?'🟢 Equipo verde':'⚪ Equipo blanco'}</h2><div class="rows">${bank[level][team].map(q=>`<article><div class="letter">${escapeHTML(q.letter)}</div><div><small>${q.mode==='starts'?'EMPIEZA POR LA':'CONTIENE LA'} ${escapeHTML(q.letter)}</small><p>${escapeHTML(q.clue)}</p><strong>${escapeHTML(q.answer)}</strong><em>${escapeHTML(q.fact)}</em></div></article>`).join('')}</div></section>`).join('');
+    const content=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)}</title><style>body{font:14px/1.45 system-ui,Arial,sans-serif;color:#1b4431;margin:25px auto;max-width:1050px;padding:0 20px}h1{color:#087846;margin-bottom:0}.intro{color:#52705c}.buttons{display:flex;justify-content:flex-end;gap:10px}button{padding:11px 17px;background:#12834e;color:white;border:0;border-radius:9px;cursor:pointer}.team{margin:28px 0}.team h2{background:#e1f2e5;padding:10px;border-radius:8px}.rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px}article{display:flex;gap:10px;border-bottom:1px solid #d8e6dc;padding:8px 0;break-inside:avoid}.letter{font-weight:900;background:#148449;color:white;border-radius:50%;width:28px;height:28px;min-width:28px;display:grid;place-items:center}small{font-weight:800;color:#247853;font-size:10px}article p{margin:3px 0}article strong{display:block}article em{display:block;color:#617869;font-size:11px;font-style:normal;margin-top:3px}@media print{@page{size:A4;margin:12mm}.buttons{display:none}.rows{grid-template-columns:1fr 1fr}body{padding:0;margin:0;font-size:11px}article{padding:5px 0}.team{break-before:auto}}</style></head><body><div class="buttons"><button onclick="window.print()">Imprimir / Guardar PDF</button></div><h1>${escapeHTML(title)}</h1><p class="intro">IES Sidón · Día de la Bandera de Andalucía · Solucionario personalizado para el profesorado</p>${blocks}</body></html>`;
+    const popup=window.open('','_blank');
+    if(!popup){notify('Permite las ventanas emergentes para ver el solucionario.');return;}
+    popup.document.open();popup.document.write(content);popup.document.close();
+  }
+  function printTeacherGuide(){
+    // Las instrucciones están dentro de la web: se abren en modo imprimible.
+    const guide=document.querySelector('#teacherHelpDialog .dialog-body');
+    const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Guía docente · Rosco 4D · IES Sidón</title><style>body{font:15px/1.55 system-ui,Arial;max-width:800px;margin:30px auto;padding:0 18px;color:#1b4431}h1{color:#077343}h2{font-size:19px}.teacher-help-lead{margin:16px 0;background:#eaf8eb;padding:13px}.teacher-help-lead span{display:block}.teacher-steps>div{display:flex;gap:15px;padding:11px 0;border-bottom:1px solid #dae7dd}.teacher-steps p{margin:0;flex:1}.step-num{font-weight:900;color:#05834a}.teacher-alert{border:2px solid #e1a13d;background:#fff9e6;border-radius:10px;padding:12px;margin:20px 0}.dialog-small{font-size:13px}@page{size:A4;margin:15mm}</style></head><body><h1>ROSCO 4D · Guía para el profesorado</h1><p>IES Sidón · Andalucía · Del ordenador de casa a la PDI</p>${guide.innerHTML}</body></html>`;
+    const popup=window.open('','_blank');if(!popup){notify('Permite las ventanas emergentes para imprimir la guía.');return;}
+    popup.document.open();popup.document.write(html);popup.document.close();popup.focus();popup.print();
+  }
+
+  function printAnswers(){if(window.ROSCO_STANDALONE){printStandaloneAnswers();return;}const level=game?.level??selectedLevel;const team=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;window.open(`solucionario.html?curso=${encodeURIComponent(level)}&equipo=${encodeURIComponent(team)}`,'_blank','noopener');}
   function playAgain(){selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}
 
   function renderSound(){const btn=$('soundButton');btn.setAttribute('aria-pressed',String(!muted));btn.innerHTML=muted?'<svg><use href="#i-volume-off"/></svg>':'<svg><use href="#i-volume"/></svg>';btn.title=muted?'Activar sonido':'Desactivar sonido';}
   function sound(type){if(muted)return;try {const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;if(!audioContext)audioContext=new Context();if(audioContext.state==='suspended')audioContext.resume();const notes=type==='correct'?[520,740]:type==='wrong'?[240,185]:type==='finish'?[500,660,820]:[400];const now=audioContext.currentTime;notes.forEach((freq,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),start=now+i*.105; o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.065,start+.012);g.gain.exponentialRampToValueAtTime(.0001,start+.115);o.connect(g);g.connect(audioContext.destination);o.start(start);o.stop(start+.13);});}catch{/* no molestar si el navegador no permite audio */}}
   async function toggleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{notify('Usa F11 para activar pantalla completa.');}}
 
-  // Editor completo: 4 cursos × 2 equipos × 27 letras = 216 preguntas.
+  // Editor completo: 4 niveles × 2 equipos × 27 letras = 216 preguntas.
   function editorValues(){
     return {letter:$('editLetter').value,mode:$('editMode').value,clue:$('editClue').value.trim(),answer:$('editAnswer').value.trim(),
       aliases:$('editAliases').value.split(';').map(a=>a.trim()).filter(Boolean),fact:$('editFact').value.trim()};
@@ -291,7 +340,7 @@
       btn.title=`Editar ${l} · Equipo ${team==='green'?'verde':'blanco'}`;btn.setAttribute('aria-pressed',String(l===letter));
       btn.addEventListener('click',()=>editorChoose(level,team,l));container.append(btn);
     });
-    $('editorSummary').textContent=`${ordinal[level]} ESO · 27 preguntas del equipo verde + 27 del blanco · 54 preguntas distintas`;
+    $('editorSummary').textContent=`${ordinal[level]} · 27 preguntas del equipo verde + 27 del blanco · 54 preguntas distintas`;
     $('editorTeamIndicator').textContent=`EQUIPO ${team==='green'?'VERDE':'BLANCO'}`;
     $('editorTeamIndicator').className='editor-team-indicator '+team;
   }
@@ -317,11 +366,11 @@
     }
     const opposite=team==='green'?'white':'green';
     if(bank[level][opposite].some(q=>norm(q.answer)===norm(item.answer))){
-      $('editorError').textContent=`El equipo ${opposite==='green'?'verde':'blanco'} ya tiene esa respuesta en este curso. Elige otra para que ambos roscos sean diferentes.`;return;
+      $('editorError').textContent=`El equipo ${opposite==='green'?'verde':'blanco'} ya tiene esa respuesta en este nivel. Elige otra para que ambos roscos sean diferentes.`;return;
     }
     bank[level][team][idx]=item;
     safeWrite(KEYS.bank,bank);editorDirty=false;$('editorError').textContent='';
-    notify(`Guardada la ${letter} de ${ordinal[level]} ESO · Equipo ${team==='green'?'verde':'blanco'}.`);
+    notify(`Guardada la ${letter} de ${ordinal[level]} · Equipo ${team==='green'?'verde':'blanco'}.`);
     loadEditor();
   }
   function restoreQuestion(){
@@ -345,7 +394,7 @@
         const upgraded=clone(bank);for(const lv of [1,2,3,4])upgraded[lv].green=clone(candidate[lv]);
         candidate=upgraded;legacy=true;
       }
-      if(!validBank(candidate))throw new Error('El JSON debe contener 4 cursos × 2 equipos × 27 letras, con respuestas válidas y diferentes entre equipos.');
+      if(!validBank(candidate))throw new Error('El JSON debe contener 4 niveles × 2 equipos × 27 letras, con respuestas válidas y diferentes entre equipos.');
       if(editorDirty && !window.confirm('Se perderán los cambios sin guardar. ¿Importar igualmente?'))return;
       bank=clone(candidate);safeWrite(KEYS.bank,bank);loadEditor();
       notify(legacy?'Banco antiguo importado para el equipo verde. Se conserva el banco blanco.':'Importadas las 216 preguntas de los dos equipos.');
@@ -353,7 +402,7 @@
     finally{input.value='';}
   }
   function resetBank(){ask('¿Restaurar las 216 preguntas originales?',
-    'Se eliminarán las modificaciones de los cuatro cursos y los dos equipos guardadas en este navegador.',()=>{
+    'Se eliminarán las modificaciones de los cuatro niveles y los dos equipos guardadas en este navegador.',()=>{
       bank=clone(BASE_BANK);safeWrite(KEYS.bank,bank);loadEditor();notify('Restaurados los 8 roscos originales.');
     });}
   function editorNavigate(dir){
@@ -362,7 +411,7 @@
   }
 
   // Eventos de interfaz.
-  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
+  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
     $('editTeam').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,e.target.value,editorSelection?.letter??'A'));
     $('editLetter').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,editorSelection?.team??'green',e.target.value));
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));

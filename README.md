@@ -1,75 +1,44 @@
-# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4
+# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.1 (dificultades con arte)
 
-Aplicación web para el **4 de diciembre, Día de la Bandera de Andalucía**. Pensada para pizarras digitales interactivas (PDI), ordenadores y pantallas táctiles. No necesita servidor ni internet al abrir los archivos una vez descargados.
+**Edición sin cuentas ni nube**: basada directamente en la V4 aportada por el usuario. Funciona abriendo los archivos locales y en GitHub Pages.
 
-**Centro:** IES Sidón · Medina Sidonia (Cádiz). Imagen de cabecera: logo proporcionado para este proyecto.
+## Los cuatro niveles
 
-## Abrir la aplicación
+1. **Nivel 1 · ¡Con salero!** — Para entrar en compás.
+2. **Nivel 2 · ¡Olé tu arte!** — La cosa se anima.
+3. **Nivel 3 · ¡Aquí hay duende!** — Hay que tener tablas.
+4. **Nivel 4 · ¡Quillo, qué nivelazo!** — Para auténticas eminencias.
 
-Descomprime el ZIP y abre **`index.html`** con Chrome, Edge o Firefox. El botón «Pantalla completa» y la tecla F11 permiten ocupar toda la PDI. La página **`solucionario.html`** se puede abrir por separado para consulta e impresión.
+Son las mismas 216 preguntas originales de la V4: 4 dificultades × 2 equipos × 27 letras (incluida Ñ). Solo cambia el nombre de las dificultades.
 
-## Contenido y modalidades
+## Para el profesorado: procedimiento recomendado
 
-- Cuatro niveles de dificultad: **1.º, 2.º, 3.º y 4.º ESO**.
-- **216 preguntas:** 27 letras por equipo × 2 equipos × 4 cursos. Incluye Ñ.
-- En cada curso, **equipo verde y equipo blanco tienen 27 preguntas diferentes** (no comparten respuestas correctas).
-- **Toda la clase:** puedes escoger el banco verde o blanco, con 27 preguntas.
-- **Duelo:** 54 preguntas por partida, dos roscos independientes de 27 letras. Los dos equipos empiezan en A. En acierto se conserva el turno. En fallo o «Pasapalabra» se cede el turno (salvo que el otro equipo ya haya terminado). Cada equipo mantiene sus aciertos, errores, pendientes y su siguiente letra. «Pasapalabra» no marca la letra como error: se retoma en una vuelta posterior.
-- Respuesta escrita opcional, con alternativas aceptadas; o juego oral dirigido por el docente, pulsando «Correcto», «Fallo» o «Pasapalabra».
-- El botón «Ver solución» muestra la respuesta sin puntuarla. Después de un acierto o fallo se muestra una explicación.
-- Cronómetro con varios límites o sin tiempo. El reloj se pausa durante las explicaciones y cuando se abandona temporalmente la pantalla.
-- Botones, atajos de teclado, sonidos opcionales, pantalla final, recuperador de partidas.
+1. Descarga y **descomprime** el ZIP original (clic derecho → Extraer todo).
+2. Abre `index.html` en Chrome/Edge. No lo ejecutes desde dentro del ZIP.
+3. Pulsa **Editor docente**. Selecciona dificultad, equipo y letra; edita la pregunta y pulsa **Guardar esta pregunta**. Puedes elegir «Empieza por» o «Contiene la».
+4. Al terminar pulsa el botón verde **«Descargar mi rosco para PDI (.html)»** dentro del editor. Esto descarga un **único HTML autónomo** con tus 216 preguntas, logotipo y estilo incluidos.
+5. Comparte o lleva **ese HTML** al aula (USB, unidad de red, correo del centro, Drive, OneDrive, etc.). En la PDI abre el HTML con un navegador. No hace falta conexión para usarlo una vez que se ha descargado.
+6. Para modificar el HTML más adelante, ábrelo con el navegador, entra en Editor docente, guarda tus nuevas preguntas y vuelve a descargar tu HTML actualizado.
 
-## Editor docente (8 bancos editables)
+**Importante:** el botón «Guardar esta pregunta» guarda la modificación en el navegador local, **NO** dentro del ZIP ni de `index.html`. El botón «Descargar mi rosco para PDI» sí crea un nuevo archivo HTML con las preguntas incrustadas. Conserva una copia del HTML en un lugar seguro.
 
-1. Desde la portada, pulsa **«Editor docente»**.
-2. Selecciona **curso**, **equipo verde o blanco** y **letra**. También puedes pulsar directamente cualquier letra de la cuadrícula, o navegar con «Anterior/Siguiente».
-3. Para cada letra elige **«Empieza por…» o «Contiene la…»** (se comprueba automáticamente la coincidencia entre letra y respuesta; la Ñ se trata como letra diferente de la N).
-4. Cambia enunciado, respuesta, sinónimos válidos y explicación. La vista previa permite comprobar la pista. Pulsa **«Guardar esta pregunta»**.
-5. El editor impide que el equipo contrario tenga **la misma respuesta** en ese curso. También puedes restaurar **una sola letra** o restablecer los ocho roscos originales.
-6. **Exportar JSON** descarga los 216 registros, incluidos todos los cambios. **Importar JSON** permite cargarlos en cualquier otro ordenador/PDI. El editor acepta también archivos antiguos de 108 preguntas para usar como equipo verde (manteniendo el blanco).
+La copia **JSON** es solo una copia de respaldo opcional; también puede importarse desde el editor. No es necesario importarla para jugar con el HTML personalizado.
 
-**Importante:** las ediciones guardadas se conservan solo en el almacenamiento local del navegador y equipo donde se hicieron. Si se publica en GitHub Pages, **no se sincronizan automáticamente** entre ordenadores. Para disponer de las mismas preguntas en todas las PDI, exporta el JSON y usa «Importar banco JSON» en cada una, o actualiza `js/questions.js` en la web publicada.
+Puedes abrir `GUIA_DOCENTE.html` para ver **instrucciones ilustradas paso a paso e imprimirlas**, o desde la portada pulsar «Ayuda para docentes». El botón de ayuda de la cabecera sigue explicando las reglas del juego.
 
-Al iniciar una partida se copia el banco de ese momento; editar después no modifica una partida que ya esté en curso.
+## Juego y marcador
 
-**Compatibilidad con V3:** si existe un banco de preguntas personalizado guardado en la V3, la V4 intenta conservarlo como equipo verde (si es válido y no coincide con el blanco). Las partidas guardadas de la V3 no se pueden continuar en V4 porque cambia la estructura de sus preguntas.
+- «Toda la clase»: 27 preguntas del banco verde o blanco.
+- «Duelo»: cada equipo tiene su propia pregunta por letra, su marcador y su recorrido. Ambos comienzan en A. Fallo/Pasapalabra cambia de equipo. Acierto conserva el turno.
+- Cronómetro, accesos de teclado, opción de pantalla completa, sonido, respuesta oral/escrita, explicación de cada respuesta, solucionario e impresión.
+- Tanto el juego como el HTML personalizado funcionan sin Internet.
 
-## Solucionario
+## Archivos
 
-En `solucionario.html` selecciona el curso y:
+`index.html`: portada, juego y editor; `GUIA_DOCENTE.html`: guía de uso e impresión; `GUIA_DOCENTE_PARA_COMPARTIR.pdf`: guía A4 para compartir con el claustro; `solucionario.html`: solucionario del paquete original; `css/styles.css`: diseño; `js/questions.js`: las 216 preguntas de serie; `js/app.js`: motor del rosco; `js/portable-template.js`: generador del archivo HTML portátil; `assets/`: logo y favicon.
 
-- **Ambos equipos:** 54 preguntas y respuestas.
-- **Equipo verde:** 27 preguntas.
-- **Equipo blanco:** 27 preguntas.
+## GitHub Pages
 
-Puedes imprimirlo o guardarlo como PDF desde el navegador. Muestra también los cambios realizados en el editor **en ese mismo navegador**.
+Sube los archivos descomprimidos a la **raíz** de tu repositorio existente, manteniendo las carpetas `css`, `js` y `assets`. El botón «Descargar mi rosco para PDI» funciona también cuando editas la web online, pero **tus cambios no se sincronizan a GitHub automáticamente**. Cada docente puede descargar su propio HTML sin modificar la web pública.
 
-## Publicar en GitHub Pages
-
-1. Abre el repositorio GitHub que ya usas para el rosco.
-2. Descomprime **`Rosco_4D_Andalucia_V4_SOLO_CAMBIOS.zip`** o **`WEB_COMPLETA.zip`** y sube los archivos **dentro del repositorio**, dejando `index.html` en la raíz.
-3. Si GitHub pregunta, reemplaza los archivos anteriores. Asegúrate de subir las carpetas `js`, `css` y `assets`.
-4. Si es la primera publicación, ve a **Settings → Pages → Deploy from a branch → main → /(root) → Save**.
-5. El enlace normalmente tendrá la forma `https://TUUSUARIO.github.io/rosco-4d-andalucia/`.
-
-## Estructura
-
-```text
-index.html                 Juego y editor docente
-solucionario.html          Solucionario doble, imprimible
-css/styles.css             Diseño responsive para PDI
-js/questions.js            216 preguntas originales editables en código
-js/app.js                  Motor del rosco y editor
-assets/logo-ies-sidon.png  Logo del centro
-assets/favicon.svg         Icono
-README.md                  Estas instrucciones
-```
-
-## Fuentes para trabajar el 4D en el aula
-
-- [Junta de Andalucía · Decreto 541/2022, de 8 de noviembre](https://www.juntadeandalucia.es/boja/2022/217/1).
-- [Junta de Andalucía · Símbolos de Andalucía](https://www.juntadeandalucia.es/organismos/transparencia/informacion-institucional-organizativa/simbolos.html).
-- [Parlamento de Andalucía · El proceso autonómico](https://www.parlamentodeandalucia.es/web/guest/proceso-autonomico).
-
-**Licencia de uso:** material didáctico para el IES Sidón. El logo pertenece a su titular; no se concede licencia de terceros sobre él.
+IES Sidón · Medina Sidonia (Cádiz) · Día de la Bandera de Andalucía.
