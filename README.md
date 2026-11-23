@@ -1,6 +1,23 @@
-# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.3 (puntuación y entradas corregidas)
+# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.4 — VALIDACIÓN REVISADA
 
-**Edición sin cuentas ni nube**: basada directamente en la V4 aportada por el usuario. Funciona abriendo los archivos locales y en GitHub Pages.
+## Cambio importante respecto a V4.3
+
+- **Una sola letra (A, B, C… Ñ… Z) nunca cuenta como acierto al escribirla y pulsar «Comprobar».** Se marca como fallo.
+- Es necesario introducir la solución **completa** o una alternativa completa indicada en el editor. Se ignoran las alternativas de un solo carácter.
+- **En la parte superior de la web se lee «V4.4 · REVISADA»**. Si no ves ese distintivo, estás abriendo una versión anterior.
+- El archivo `index.html` contiene ahora todos los scripts, preguntas, estilos y logo. **Para actualizar GitHub Pages basta con sustituir `index.html`**. Esto evita cargar por error un `js/app.js` anterior que pueda seguir en la caché.
+- El archivo HTML generado con «Descargar mi rosco para PDI» incluye la misma validación. **Los HTML descargados anteriormente NO se actualizan solos**: se deben generar de nuevo desde esta V4.4.
+- Las preguntas personalizadas en el mismo navegador se conservan; las partidas anteriores se reinician para no mezclar marcadores de otras versiones.
+
+## Comprobación rápida en el aula
+
+1. Abre `index.html` y comprueba que aparece el distintivo `V4.4 · REVISADA`.
+2. Elige cualquier dificultad y juega.
+3. Escribe solo «A» y pulsa «Comprobar». Debe marcar **fallo**, nunca correcto.
+4. Repite con «B», con otras letras y con las preguntas del equipo blanco.
+5. Usa la respuesta completa para verificar que sí se acepta.
+
+## Instrucciones generales
 
 ## Los cuatro niveles
 
@@ -33,7 +50,7 @@ Se eliminan **todos los atajos globales de una sola letra** (`A`, `F`, `P`, `S`)
 - Tocar una letra de la rueda **solo selecciona la pregunta**, nunca cambia su puntuación.
 - En la casilla de respuesta, escribir una letra (por ejemplo `A`) no se considera respuesta correcta a `Alhambra`. La evaluación se realiza solamente con **Comprobar** o **Intro** dentro de la casilla.
 - Los botones **Correcto**, **Fallo** y **Pasapalabra** son de control manual por el docente; `Correcto` no comprueba automáticamente lo hablado en voz alta.
-- Los HTML portátiles descargados desde esta versión incluyen el mismo arreglo. **Los HTML que se descargaron con la V4.1 mantienen el fallo y deben generarse de nuevo** con la V4.3 si se quieren corregidos.
+- Los HTML portátiles descargados desde esta versión incluyen el mismo arreglo. **Los HTML que se descargaron con la V4.1 mantienen el fallo y deben generarse de nuevo** con la V4.4 si se quieren corregidos.
 
 ## Corrección adicional V4.3
 

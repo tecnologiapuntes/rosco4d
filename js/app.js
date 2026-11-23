@@ -5,7 +5,7 @@
   const LETTERS = [...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'];
   const BASE_BANK = JSON.parse(JSON.stringify(window.ROSCO_QUESTIONS));
   const installationKey = window.ROSCO_STANDALONE ? '_portable_'+String(window.ROSCO_PORTABLE_ID||'default') : '_v4';
-  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game'+installationKey,sound:'rosco4d_sound_v1'};
+  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v44'+installationKey,sound:'rosco4d_sound_v1'};
   const $ = (id) => document.getElementById(id);
   const ordinal = {1:"¡Con salero!",2:"¡Olé tu arte!",3:"¡Aquí hay duende!",4:"¡Quillo, qué nivelazo!"};
   const levelNames = {1:"Para entrar en compás",2:"La cosa se anima",3:"Hay que tener tablas",4:"Para auténticas eminencias"};
@@ -220,21 +220,24 @@
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
     renderAll();saveGame();
   }
+  // Una entrada escrita NUNCA es un acierto por coincidir con la inicial.
+  // Debe ser la solución COMPLETA (o una alternativa completa expresamente guardada).
+  function matchesFullAnswer(question, rawInput){
+    const typed=norm(rawInput);
+    if(typed.length<2 || !question)return false;
+    const candidates=[question.answer,...(Array.isArray(question.aliases)?question.aliases:[])];
+    return candidates.some(candidate=>{
+      const full=norm(candidate);
+      return full.length>=2 && typed===full;
+    });
+  }
   function checkTyped(){
     if(!game || game.phase!=='running' || game.paused)return;
     const text=$('answerInput').value.trim();
-    if(!text){notify('Escribe una respuesta o utiliza los botones del docente.');return;}
-    const entered=norm(text);
-    // Nunca aceptar una sola letra como acierto: evita respuestas parciales,
-    // alias mal configurados y teclados virtuales que pierden el foco.
-    if(entered.length<2){
-      mark('wrong');return;
-    }
-    const q=questionFor(game.cursor);
-    // Una respuesta es correcta SOLO si coincide COMPLETA con la solución
-    // o con una de sus alternativas (no por comenzar con la letra del rosco).
-    const choices=[q.answer,...q.aliases].map(norm).filter(value=>value.length>=2);
-    mark(choices.includes(entered)?'correct':'wrong');
+    if(!text){notify('Escribe una respuesta completa o usa los botones del docente.');return;}
+    const question=questionFor(game.cursor);
+    // Guardar una letra aislada como respuesta: fallo en las 27 letras.
+    mark(matchesFullAnswer(question,text)?'correct':'wrong');
   }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
   function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
