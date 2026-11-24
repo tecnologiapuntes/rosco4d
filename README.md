@@ -1,31 +1,34 @@
-# ROSCO 4D ANDALUCÍA — V5.1 · IES SIDÓN
+# ROSCO 4D ANDALUCÍA — V5.2 · IES SIDÓN
 
-Esta entrega parte del repositorio `rosco4d.rar` facilitado por el centro (V5.0) y conserva los 216 enunciados, los cuatro niveles, dos equipos con roscos independientes, editor y exportación HTML, ayudas docentes, vista previa, Deshacer, comodines y repaso de fallos.
+Esta edición parte de la V5.1 y **elimina íntegramente el lector automático de preguntas**. Conserva el diseño, las 216 preguntas, los cuatro niveles, dos equipos con roscos independientes, cronómetros, comodines, editor, vista previa, Deshacer, repaso de errores, exportación HTML y las dos ayudas docentes.
 
-## Novedades V5.1
+## Cambios en V5.2
 
-- **Lector de preguntas:** en español, configurable como automático, manual o desactivado. Incluye selección de voz y tres velocidades. No lee soluciones. Detiene el cronómetro mientras pronuncia la pregunta. Depende de la síntesis de voz del navegador y las voces instaladas; sin Internet solo estará disponible si la voz correspondiente es local.
-- **Modo presentador:** oculta el rosco circular y agranda la pregunta para la PDI, manteniendo las acciones docentes y el botón para mostrar/ocultar la respuesta en pantalla.
-- **Avisos de tiempo:** a los 30 y 10 segundos, por equipo, visuales y con sonido opcional. Pueden desactivarse en la portada.
+- **Sin lector de voz**: se han eliminado sus controles y el motor de lectura de la web principal y del archivo portable.
+- **Modo presentador**: mantiene la pregunta ampliada y el control manual de Correcto, Fallo y Pasapalabra.
+- **Avisos de tiempo**: independientes del lector; se pueden activar/desactivar en la portada. Siguen siendo visuales y, si el sonido del juego está activo, reproducen un aviso breve a 30 y 10 segundos.
+- **Exportación docente**: el HTML personalizado generado por cada profesor tampoco incluye el lector.
 
-## Publicación en GitHub Pages
+## Para actualizar GitHub Pages
 
-Para evitar conflictos anteriores, **sube SOLO el nuevo `index.html` a la raíz de la rama `main`** de tu repositorio. El `index.html` es autónomo e incorpora estilos, el banco de preguntas, el código y la plantilla exportable. Los archivos de `js/` y `css/` están sincronizados para servir como fuentes editables, pero no son necesarios para publicar.
+1. Abre el repositorio limpio desde GitHub Desktop, en la rama `main`.
+2. Para publicar el cambio sin conflictos, copia **únicamente `index.html`** desde el ZIP `SOLO_CAMBIOS` a la raíz del repositorio.
+3. Haz **Commit to main** y después **Push origin**.
+4. Abre la web y comprueba que indique **V5.2 · PDI**. Si sigues viendo la antigua, prueba Ctrl+F5.
 
-## Uso en PDI
+El archivo `index.html` contiene todo lo necesario: estilos, preguntas, código y la plantilla para descargar un HTML personalizado. No es necesario reemplazar CSS ni JS para publicar esta versión.
 
-- Abre `index.html` en Chrome/Edge o publica en GitHub Pages.
-- Elige nivel, equipos y tiempo. En «Presentador virtual» configura el lector y avisos.
-- Juega. En la parte superior pulsa «Modo presentador» para agrandar la pregunta.
-- Edita en «Editor docente», guarda cada pregunta y selecciona «Descargar mi rosco para PDI» para obtener **un solo HTML** con tus cambios y las nuevas funciones.
-- Si no se detecta ninguna voz española, se podrá seguir jugando y corregir manualmente. Una PDI sin Internet requiere una voz española local instalada para leer en voz alta.
+## Para el profesorado
 
-## Archivos
+- Entra en **Editor docente**, modifica las preguntas, guarda cada una y elige **Descargar mi rosco para PDI**.
+- El archivo descargado funciona como HTML independiente en Chrome o Edge, con o sin Internet.
+- La sección **Ayuda para docentes** conserva dos procedimientos: desde la web y a partir de un ZIP.
+- Para usar el modo presentador, pulsa el botón correspondiente durante el juego. Los avisos de tiempo se controlan en la portada.
 
-- `index.html` — web completa autónoma V5.1 para GitHub Pages
-- `Rosco_4D_V5_1_LISTO_PARA_PDI.html` — HTML autónomo con preguntas originales
-- `css/styles.css`, `js/app.js`, `js/questions.js`, `js/portable-template.js` — fuentes y banco para mantenimiento
-- `solucionario.html` — solucionario
-- `GUIA_DOCENTE.html` y PDFs — guías para docentes (los PDF explican el flujo de V4.9, que se mantiene)
+## Contenido
 
-Nota: el motor Web Speech API no requiere una API de pago, pero la disponibilidad de voces locales depende del sistema operativo. El lector no envía respuestas a un servidor del proyecto.
+- `index.html`: web principal V5.2 autónoma para GitHub Pages.
+- `Rosco_4D_V5_2_LISTO_PARA_PDI.html`: juego autónomo con las preguntas originales.
+- `js/app.js`, `js/questions.js`, `js/portable-template.js`, `css/styles.css`: fuentes para futuras ediciones, sincronizadas con la web.
+- `solucionario.html`: solucionario.
+- `GUIA_DOCENTE.html` y guías PDF: procedimientos para editar, guardar y usar el juego.

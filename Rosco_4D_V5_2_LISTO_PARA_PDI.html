@@ -286,18 +286,32 @@
 @keyframes guideFade{from{opacity:.55}to{opacity:1}}
 @media(max-width:560px){.teacher-guide-tabs{grid-template-columns:1fr}.teacher-guide-tab{min-height:60px;padding:9px 12px}}
 
-</style><style id="v51Styles">
+</style><style id="v52Styles">
 
-/* V5.1 · Lector de preguntas, modo presentador y avisos de tiempo */
-.voice-setup{margin-top:13px;padding:14px 17px;background:#eef7ed;border:1px solid #c8e7ce;border-radius:15px;color:#154f39}
-.voice-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:7px;margin-bottom:10px}.voice-heading strong{font-size:16px;font-weight:950}.voice-heading span{font-size:11px;color:#397456}
-.voice-settings{display:grid;grid-template-columns:1.4fr 1.3fr .85fr 1fr;gap:10px;align-items:end}.voice-settings label{display:flex;flex-direction:column;gap:5px;font-weight:850;font-size:11px;color:#245c41;min-width:0}.voice-settings select{height:39px;padding:5px 9px;border:1px solid #bedac8;border-radius:9px;background:white;color:#173f2a;width:100%;font-size:12px}.voice-settings .alert-checkbox{display:flex;align-items:center;flex-direction:row;gap:7px;min-height:39px;font-size:11px}.alert-checkbox input{accent-color:#0b8050;width:17px;height:17px}.voice-setup[open] .voice-settings{margin-top:12px}.voice-setup summary{cursor:pointer;user-select:none}.voice-setup summary::marker{color:#198554}.voice-setup:not([open]){padding:11px 17px}.voice-setup-note{font-size:11px;color:#47775a;line-height:1.45;margin:7px 0 0}
-.voice-game-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-2px 0 12px}.voice-control{border:1px solid #b5d8c2;background:#edf7ef;color:#155f3e;border-radius:10px;min-height:36px;font:inherit;font-weight:850;font-size:12px;padding:7px 11px;cursor:pointer}.voice-read{background:#137d4a;color:white;border-color:#0b6f42}.voice-control:disabled{opacity:.4;cursor:not-allowed}.speech-status{font-size:11px;color:#516c5b;font-weight:700}.speech-status.speaking{color:#067746}.time-flash{margin-left:7px;padding:4px 8px;border-radius:8px;color:#fff7db;background:#ba5420;font-size:11px;font-weight:950;white-space:nowrap;animation:warningBlink 1.2s ease-in-out infinite}.time-flash.is-hidden{display:none!important}@keyframes warningBlink{50%{opacity:.7}}
+/* V5.2: modo presentador, avisos de tiempo y sin lector de preguntas. */
+.time-alerts-setup{margin:13px 0 0;padding:11px 16px;background:#eef7ed;border:1px solid #c8e7ce;border-radius:14px;color:#15503a}
+.time-alerts-setup label{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:850;cursor:pointer}
+.time-alerts-setup input{width:18px;height:18px;accent-color:#0b8050;flex:0 0 auto}
+.time-flash{margin-left:7px;padding:4px 8px;border-radius:8px;color:#fff7db;background:#ba5420;font-size:11px;font-weight:950;white-space:nowrap;animation:warningBlink 1.2s ease-in-out infinite}
+.time-flash.is-hidden{display:none!important}
+@keyframes warningBlink{50%{opacity:.7}}
 .presenter-toggle[aria-pressed="true"]{background:#daf5e4;color:#086540;border-color:#91d3ac;font-weight:950}
-body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode .rosco-zone{display:none}body.presenter-mode .question-zone{max-width:1100px;margin:0 auto;min-height:min(68vh,650px);padding:clamp(24px,3.6vw,58px);border:3px solid #77c7a0}body.presenter-mode .question-body{font-size:clamp(27px,3.1vw,49px);line-height:1.3;min-height:150px;margin:20px 0 25px}body.presenter-mode .question-topline h2{font-size:clamp(26px,3vw,43px)}body.presenter-mode .question-rule{font-size:clamp(18px,2vw,27px)}body.presenter-mode .answer-input-block{display:none}body.presenter-mode .scoreboard{display:none}body.presenter-mode .wildcard-strip{margin-bottom:12px}body.presenter-mode .game-screen{padding-top:12px}body.presenter-mode .question-end{display:none}body.presenter-mode .presenter-reveal-btn{display:inline-flex}body:not(.presenter-mode) .presenter-reveal-btn{display:none}
+body.presenter-mode .board-layout{display:block;min-height:0}
+body.presenter-mode .rosco-zone{display:none}
+body.presenter-mode .question-zone{max-width:1100px;margin:0 auto;min-height:min(68vh,650px);padding:clamp(24px,3.6vw,58px);border:3px solid #77c7a0}
+body.presenter-mode .question-body{font-size:clamp(27px,3.1vw,49px);line-height:1.3;min-height:150px;margin:20px 0 25px}
+body.presenter-mode .question-topline h2{font-size:clamp(26px,3vw,43px)}
+body.presenter-mode .question-rule{font-size:clamp(18px,2vw,27px)}
+body.presenter-mode .answer-input-block{display:none}
+body.presenter-mode .scoreboard{display:none}
+body.presenter-mode .wildcard-strip{margin-bottom:12px}
+body.presenter-mode .game-screen{padding-top:12px}
+body.presenter-mode .question-end{display:none}
+body.presenter-mode .presenter-reveal-btn{display:inline-flex}
+body:not(.presenter-mode) .presenter-reveal-btn{display:none}
 .presenter-reveal-btn{border:1px solid #a9cbab;border-radius:10px;background:#f0f8ef;color:#18563a;padding:9px 14px;font:inherit;font-weight:850;cursor:pointer;margin-top:7px}
-@media(max-width:1100px){.voice-settings{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.voice-settings{grid-template-columns:1fr}.voice-heading strong{font-size:14px}.voice-game-toolbar{margin-top:4px}.voice-control{font-size:11px;padding:7px}.speech-status{width:100%}.voice-setup{padding:10px}body.presenter-mode .question-zone{padding:18px;min-height:0}body.presenter-mode .question-body{font-size:26px;min-height:120px}}
-@media(max-height:850px) and (min-width:801px){.voice-setup{padding:8px 12px;margin-top:9px}.voice-heading{margin-bottom:5px}.voice-settings select{height:33px}.voice-setup-note{margin-top:4px}.voice-game-toolbar{margin:0 0 7px}.voice-control{min-height:31px;padding:5px 10px}body.presenter-mode .question-zone{min-height:0}body.presenter-mode .question-body{font-size:clamp(27px,3vw,40px);min-height:100px;margin:13px 0}}
+@media(max-width:640px){body.presenter-mode .question-zone{padding:18px;min-height:0}body.presenter-mode .question-body{font-size:26px;min-height:120px}}
+@media(max-height:850px) and (min-width:801px){body.presenter-mode .question-zone{min-height:0}body.presenter-mode .question-body{font-size:clamp(27px,3vw,40px);min-height:100px;margin:13px 0}}
 
 </style>
 </head>
@@ -338,7 +352,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
         </div>
       </div>
       <nav class="top-actions" aria-label="Herramientas">
-        <span class="version-chip" title="Si no aparece V4.5, se está abriendo una versión antigua">V5.1 · PRESENTADOR</span>
+        <span class="version-chip" title="Si no aparece V4.5, se está abriendo una versión antigua">V5.2 · PDI</span>
         <span class="header-commemoration"><span class="header-dot"></span> DÍA DE LA BANDERA · 4 DICIEMBRE</span>
         <button class="icon-btn" type="button" id="helpButton" title="Cómo jugar" aria-label="Cómo jugar"><svg><use href="#i-help"/></svg></button>
         <button class="icon-btn" type="button" id="soundButton" title="Activar o desactivar sonido" aria-label="Activar o desactivar sonido" aria-pressed="true"><svg><use href="#i-volume"/></svg></button>
@@ -390,16 +404,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
 </div>
 <div class="solo-bank-row" id="soloBankRow"><label for="soloBankSelect">Banco de preguntas para «Toda la clase»</label><select id="soloBankSelect"><option value="green">Equipo A (verde) · 27 preguntas</option><option value="white">Equipo B (azul) · 27 preguntas diferentes</option></select><small>En duelo, ambos bancos se utilizan a la vez y cada equipo empieza por la A.</small></div>
           
-          <details class="voice-setup" id="voiceSetup" aria-label="Configurar el lector de preguntas">
-            <summary class="voice-heading"><strong>🔊 Presentador virtual · Ajustar voz y avisos</strong><span>Automático / manual / sin voz · pulsa para configurar</span></summary>
-            <div class="voice-settings">
-              <label>Lectura de preguntas<select id="voiceModeSelect"><option value="auto">Automática · al cambiar de pregunta</option><option value="manual">Manual · pulsando «Leer pregunta»</option><option value="off">Sin lector de voz</option></select></label>
-              <label>Voz disponible<select id="voiceSelect" aria-label="Elegir voz española"><option value="auto">Automática · voz española disponible</option></select></label>
-              <label>Velocidad<select id="voiceRateSelect"><option value="0.8">Pausada (0,8×)</option><option value="0.95" selected>Natural (0,95×)</option><option value="1.1">Rápida (1,1×)</option></select></label>
-              <label class="alert-checkbox"><input id="timeAlertsSelect" type="checkbox" checked> 🔔 Avisos a 30 y 10 segundos</label>
-            </div>
-            <p class="voice-setup-note" id="voiceAvailability">Se leerá la letra, «Empieza por» o «Contiene la» y el enunciado; nunca la solución. Se detiene el reloj mientras habla.</p>
-          </details>
+          <div class="time-alerts-setup"><label for="timeAlertsSelect"><input id="timeAlertsSelect" type="checkbox" checked> 🔔 Avisos de tiempo a los 30 y 10 segundos (desactivables)</label></div>
 
           <div class="setup-footer"><span><span class="offline-dot"></span> Funciona sin conexión · Ideal para PDI y pantallas táctiles</span><div><button class="plain-link preview-link" id="previewButton" type="button" title="Revisar los enunciados antes de empezar"><svg><use href="#i-eye"/></svg> Vista previa</button><button class="plain-link help-teachers-link" id="teacherHelpButton" type="button"><svg><use href="#i-help"/></svg> Ayuda para docentes</button><button class="plain-link" id="editorButton" type="button"><svg><use href="#i-edit"/></svg> Editor docente</button><button class="plain-link" id="printButton" type="button"><svg><use href="#i-print"/></svg> Solucionario</button></div></div>
           <div class="resume-banner is-hidden" id="resumeBanner"><span>Hay una partida sin terminar guardada en este dispositivo.</span><button class="secondary-btn" id="resumeButton" type="button">Continuar partida <svg><use href="#i-chevron"/></svg></button><button id="discardButton" class="plain-link" type="button">Descartar</button></div>
@@ -409,7 +414,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
       <section class="screen game-screen is-hidden" id="gameScreen" aria-labelledby="gameTitle">
         <div class="game-toolbar"><div class="game-breadcrumb"><button type="button" class="back-button" id="backButton"><svg><use href="#i-arrow-left"/></svg> Inicio</button><span class="breadcrumb-divider"></span><span class="course-chip" id="gameLevelChip">¡Con salero!</span><span class="mode-chip" id="gameModeChip">CLASE COMPLETA</span></div><div class="game-tools"><div id="duelHud" class="duel-hud is-hidden" aria-label="Marcadores y tiempos de los dos equipos">
 <span class="hud-team hud-green" id="hudGreen"><small id="hudGreenName">Verde</small><b id="hudGreenScore">0</b><strong id="hudGreenTimer">05:00</strong></span>
-<span class="hud-team hud-white" id="hudWhite"><small id="hudWhiteName">Blanco</small><b id="hudWhiteScore">0</b><strong id="hudWhiteTimer">05:00</strong></span></div><button class="toolbar-btn" id="pdiButton" type="button" aria-pressed="false">Modo PDI</button><button class="toolbar-btn presenter-toggle" id="presenterButton" type="button" aria-pressed="false" title="Centrar la atención en la pregunta">🎤 Modo presentador</button><button class="toolbar-btn undo-last-btn" id="undoButton" type="button" title="Anular el último acierto, fallo o Pasapalabra" disabled>↶ <span>Deshacer</span></button><button class="toolbar-btn" id="restartButton" title="Reiniciar partida"><svg><use href="#i-reset"/></svg><span>Reiniciar</span></button><button type="button" id="pauseButton" class="toolbar-btn"><svg><use href="#i-pause"/></svg><span>Pausar</span></button><div class="timer-display" id="timerDisplay" aria-label="Tiempo restante" role="timer"><span class="timer-caption">TIEMPO</span><strong id="timeValue">05:00</strong><span id="timeFlash" class="time-flash is-hidden" role="status" aria-live="polite">¡ÚLTIMOS 10 s!</span></div></div></div>
+<span class="hud-team hud-white" id="hudWhite"><small id="hudWhiteName">Blanco</small><b id="hudWhiteScore">0</b><strong id="hudWhiteTimer">05:00</strong></span></div><button class="toolbar-btn" id="pdiButton" type="button" aria-pressed="false">Modo PDI</button><button class="toolbar-btn presenter-toggle" id="presenterButton" type="button" aria-pressed="false" title="Centrar la atención en la pregunta">🖥️ Modo presentador</button><button class="toolbar-btn undo-last-btn" id="undoButton" type="button" title="Anular el último acierto, fallo o Pasapalabra" disabled>↶ <span>Deshacer</span></button><button class="toolbar-btn" id="restartButton" title="Reiniciar partida"><svg><use href="#i-reset"/></svg><span>Reiniciar</span></button><button type="button" id="pauseButton" class="toolbar-btn"><svg><use href="#i-pause"/></svg><span>Pausar</span></button><div class="timer-display" id="timerDisplay" aria-label="Tiempo restante" role="timer"><span class="timer-caption">TIEMPO</span><strong id="timeValue">05:00</strong><span id="timeFlash" class="time-flash is-hidden" role="status" aria-live="polite">¡ÚLTIMOS 10 s!</span></div></div></div>
         <div class="turn-banner is-hidden" id="turnBanner" role="status" aria-live="polite" aria-atomic="true">
   <span class="turn-letter" id="turnTeamLetter">A</span>
   <span class="turn-text"><span class="turn-kicker" id="turnKicker">AHORA JUEGA · EQUIPO A</span><strong class="turn-name" id="turnTeamName">Equipo A</strong></span>
@@ -418,11 +423,6 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
 <div class="board-layout">
           <section class="rosco-zone" aria-label="Rosco de 27 letras"><div class="rosco-bg"></div><div class="rosco-frame" id="roscoFrame"><div class="rosco-letters" id="roscoLetters"></div><div class="rosco-core"><div class="core-flag flag-horizontal" aria-hidden="true"><i></i><i></i><i></i></div><div class="core-label" id="coreTeamLabel">ROSCO</div><div class="core-title">4<span>D</span></div><div class="core-name">ANDALUCÍA</div><div class="core-subtext">DÍA DE LA BANDERA</div><div class="core-division"></div><div class="core-progress"><strong id="coreCorrect">0</strong><span>de 27 aciertos</span></div></div></div><div class="legend"><span><i class="legend-dot is-active"></i> Actual</span><span><i class="legend-dot is-correct"></i> Acierto</span><span><i class="legend-dot is-wrong"></i> Fallo</span><span><i class="legend-dot is-pending"></i> Pendiente</span></div></section>
           <section class="question-zone" aria-labelledby="gameTitle"><div class="question-topline"><div><p class="question-eyebrow" id="questionCounter">PREGUNTA 1 DE 27</p><h2 id="gameTitle">¡Vamos a por el rosco!</h2></div><div class="letter-mini" id="letterMini">A</div></div><div class="question-rule"><span class="question-rule-dot"></span><span id="letterRule">EMPIEZA POR LA A</span></div><p class="question-body" id="questionText">Selecciona un nivel para comenzar.</p>
-              <div class="voice-game-toolbar" aria-label="Controles de lectura">
-                <button type="button" id="readQuestionButton" class="voice-control voice-read">🔊 Leer / repetir pregunta</button>
-                <button type="button" id="stopReadingButton" class="voice-control">■ Detener voz</button>
-                <span id="speechStatus" class="speech-status" role="status" aria-live="polite">Lector preparado</span>
-              </div>
 <button type="button" class="presenter-reveal-btn" id="presenterRevealButton">👁 Mostrar / ocultar solución en pantalla</button><div class="answer-input-block"><label for="answerInput">RESPUESTA ESCRITA (OPCIONAL)</label><div class="answer-input-row"><input id="answerInput" type="text" autocomplete="off" spellcheck="false" placeholder="Escribe aquí o responde en voz alta…"><button type="button" id="checkInputButton" class="check-input-btn">Comprobar</button></div><p id="answerValidation" class="answer-validation is-hidden" role="alert" aria-live="assertive"></p><p class="input-help">En la PDI, la clase puede responder en voz alta y el docente marca el resultado.</p></div><div class="feedback-card is-hidden" id="feedbackCard" role="status" aria-live="polite"><div class="feedback-top"><span class="feedback-icon" id="feedbackIcon">✓</span><strong id="feedbackTitle">¡Correcto!</strong><span class="feedback-answer" id="feedbackAnswer"></span></div><p class="feedback-attempt" id="feedbackAttempt"></p><p id="feedbackFact"></p></div><div class="reveal-card is-hidden" id="revealCard"><small>SOLUCIÓN (NO SE PUNTÚA AL MOSTRARLA)</small><strong id="revealAnswer"></strong></div><div class="wildcard-strip"><button type="button" class="wildcard-btn" id="hintMijita">🌿 ¡Una mijita! · 1 disponible</button><button type="button" class="wildcard-btn" id="hintCable">💡 ¡Échame un cable! · 1 disponible</button></div>
 <p id="wildcardHint" class="wildcard-hint is-hidden" aria-live="polite"></p>
 <div class="question-actions" id="questionActions"><button type="button" class="action-btn answer-correct" id="correctButton"><svg><use href="#i-check"/></svg><span>Correcto</span></button><button type="button" class="action-btn answer-wrong" id="wrongButton"><svg><use href="#i-cross"/></svg><span>Fallo</span></button><button type="button" class="action-btn answer-pass" id="passButton"><svg><use href="#i-skip"/></svg><span>Pasapalabra</span></button></div><div class="question-actions is-hidden" id="nextActions"><button type="button" class="primary-btn next-btn" id="nextButton">Siguiente letra <svg><use href="#i-chevron"/></svg></button></div><div class="question-end"><button id="revealButton" type="button" class="plain-link reveal-link"><svg><use href="#i-eye"/></svg> Ver solución</button><span class="keyboard-hint">Toca una letra para mostrar la pregunta, sin puntuar. Escribe la respuesta completa y pulsa Comprobar.</span></div></section>
@@ -446,7 +446,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
       </div>
     </dialog>
 
-    <dialog id="helpDialog" class="app-dialog"><div class="dialog-head"><div><small>GUÍA RÁPIDA</small><h2>Cómo se juega</h2></div><button type="button" class="dialog-close" data-close="helpDialog" aria-label="Cerrar">×</button></div><div class="dialog-body"><p>El rosco reúne <strong>27 letras (incluida la Ñ)</strong>. Cada letra tiene una pregunta adaptada al nivel elegido. El alumnado responde en voz alta y el profesor o la profesora controla la pantalla PDI, o bien se escribe la respuesta en la casilla.</p><div class="instruction-list"><div><span class="step-num">01</span><p><strong>Correcto</strong> pone la letra en verde; <strong>Fallo</strong> la pone en rojo.</p></div><div><span class="step-num">02</span><p><strong>Pasapalabra</strong> deja la letra pendiente para volver a ella más tarde.</p></div><div><span class="step-num">03</span><p><strong>Duelo</strong>: si un equipo acierta, conserva el turno y suma un punto. Si falla o pulsa «Pasapalabra», el turno pasa automáticamente al otro equipo. Cada equipo empieza por la A, recibe preguntas <strong>totalmente diferentes</strong> y conserva sus letras y su recorrido por separado.</p></div><div><span class="step-num">04</span><p>Cada equipo tiene 27 preguntas independientes (54 en total por duelo). Al mostrar el resultado se detiene el crono para comentar el dato educativo. Pulsa «Siguiente letra» para continuar.</p></div></div><div class="shortcut-panel"><strong>Importante: cómo se puntúa</strong><p>Al pulsar una letra del rosco solo se muestra su pregunta; no cuenta como acierto. Para evaluar, escribe la respuesta y pulsa <strong>Comprobar</strong> (o Intro desde la casilla), o utiliza los botones <strong>Correcto</strong>, <strong>Fallo</strong> y <strong>Pasapalabra</strong> como docente. Pulsar letras del teclado fuera del campo de respuesta no puntúa. Escribir solo una letra (A, B, C… hasta Z) muestra «Respuesta incompleta» y no da ningún punto. Comprueba que arriba aparezca «V5.1 · PRESENTADOR»; si no aparece, estás abriendo un archivo anterior.</p></div><p class="dialog-small"><strong>V5.1:</strong> configura la voz española y la lectura automática o manual desde la portada; el lector no pronuncia soluciones y pausa el tiempo mientras habla. Activa «Modo presentador» para destacar la pregunta. Los avisos de tiempo aparecen a los 30 y 10 segundos de cada equipo. En cualquier ordenador/PDI sin voz compatible, el juego sigue funcionando sin lector.</p><p class="dialog-small">Puedes tocar una letra pendiente para ir directamente a ella. El progreso se guarda automáticamente en este navegador. La aplicación funciona sin conexión una vez descargados sus archivos.</p></div><div class="dialog-footer"><button type="button" class="primary-btn" data-close="helpDialog">Entendido</button></div></dialog>
+    <dialog id="helpDialog" class="app-dialog"><div class="dialog-head"><div><small>GUÍA RÁPIDA</small><h2>Cómo se juega</h2></div><button type="button" class="dialog-close" data-close="helpDialog" aria-label="Cerrar">×</button></div><div class="dialog-body"><p>El rosco reúne <strong>27 letras (incluida la Ñ)</strong>. Cada letra tiene una pregunta adaptada al nivel elegido. El alumnado responde en voz alta y el profesor o la profesora controla la pantalla PDI, o bien se escribe la respuesta en la casilla.</p><div class="instruction-list"><div><span class="step-num">01</span><p><strong>Correcto</strong> pone la letra en verde; <strong>Fallo</strong> la pone en rojo.</p></div><div><span class="step-num">02</span><p><strong>Pasapalabra</strong> deja la letra pendiente para volver a ella más tarde.</p></div><div><span class="step-num">03</span><p><strong>Duelo</strong>: si un equipo acierta, conserva el turno y suma un punto. Si falla o pulsa «Pasapalabra», el turno pasa automáticamente al otro equipo. Cada equipo empieza por la A, recibe preguntas <strong>totalmente diferentes</strong> y conserva sus letras y su recorrido por separado.</p></div><div><span class="step-num">04</span><p>Cada equipo tiene 27 preguntas independientes (54 en total por duelo). Al mostrar el resultado se detiene el crono para comentar el dato educativo. Pulsa «Siguiente letra» para continuar.</p></div></div><div class="shortcut-panel"><strong>Importante: cómo se puntúa</strong><p>Al pulsar una letra del rosco solo se muestra su pregunta; no cuenta como acierto. Para evaluar, escribe la respuesta y pulsa <strong>Comprobar</strong> (o Intro desde la casilla), o utiliza los botones <strong>Correcto</strong>, <strong>Fallo</strong> y <strong>Pasapalabra</strong> como docente. Pulsar letras del teclado fuera del campo de respuesta no puntúa. Escribir solo una letra (A, B, C… hasta Z) muestra «Respuesta incompleta» y no da ningún punto. Comprueba que arriba aparezca «V5.2 · PDI»; si no aparece, estás abriendo un archivo anterior.</p></div><p class="dialog-small"><strong>V5.2:</strong> configura la voz española y la lectura automática o manual desde la portada; el lector no pronuncia soluciones y pausa el tiempo mientras habla. Activa «Modo presentador» para destacar la pregunta. Los avisos de tiempo aparecen a los 30 y 10 segundos de cada equipo. En cualquier ordenador/PDI sin voz compatible, el juego sigue funcionando sin lector.</p><p class="dialog-small">Puedes tocar una letra pendiente para ir directamente a ella. El progreso se guarda automáticamente en este navegador. La aplicación funciona sin conexión una vez descargados sus archivos.</p></div><div class="dialog-footer"><button type="button" class="primary-btn" data-close="helpDialog">Entendido</button></div></dialog>
 
   <dialog id="editorDialog" class="app-dialog editor-dialog"><div class="dialog-head"><div><small>IES SIDÓN · HERRAMIENTAS DOCENTES</small><h2>Editor de los dos roscos</h2></div><button type="button" class="dialog-close" data-close="editorDialog" aria-label="Cerrar">×</button></div>
     <div class="dialog-body editor-body">
@@ -581,86 +581,22 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
   let muted=safeRead(KEYS.sound)===false; let audioContext=null; let toastTimeout=null; let confirmCallback=null;
   let editorSelection=null; let editorDirty=false;
 
-  // V5.1: lector local Web Speech API (sin enviar preguntas a ningún servidor propio).
-  // El motor de voz depende del navegador y de las voces instaladas en cada PDI.
-  let voiceMode=safeRead('rosco4d_voice_mode_v51')||'auto';
-  if(!['auto','manual','off'].includes(voiceMode))voiceMode='auto';
-  let voiceRate=Number(safeRead('rosco4d_voice_rate_v51'))||0.95;
-  let voiceChoice=safeRead('rosco4d_voice_choice_v51')||'auto';
+  // V5.2 · Sin síntesis de voz. Los avisos de tiempo siguen siendo opcionales.
   let alertsEnabled=safeRead('rosco4d_time_alerts_v51')!==false;
   let presenterMode=false;
-  let voiceReading=false, voiceSequence=0, speakingWatchdog=null;
-  const hasSpeech=()=>typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
-  function setSpeechStatus(message,active=false){$('speechStatus').textContent=message;$('speechStatus').classList.toggle('speaking',active);}
-  function clearVoiceWatchdog(){if(speakingWatchdog!==null){clearTimeout(speakingWatchdog);speakingWatchdog=null;}}
-  function stopReading(announce=false){
-    voiceSequence++;clearVoiceWatchdog();voiceReading=false;
-    if(hasSpeech()){try{window.speechSynthesis.cancel();}catch{}}
-    setSpeechStatus(announce?'Lectura detenida':'Lector preparado');renderVoiceButtons();
-    lastTick=performance.now();
-  }
-  function spanishVoices(){if(!hasSpeech())return [];return window.speechSynthesis.getVoices().filter(v=>/^es([-_]|$)/i.test(v.lang));}
-  function loadVoices(){
-    const select=$('voiceSelect');if(!select)return;
-    const previous=voiceChoice;select.replaceChildren();
-    const auto=document.createElement('option');auto.value='auto';auto.textContent='Automática · español disponible';select.append(auto);
-    const voices=spanishVoices();
-    voices.sort((a,b)=>Number(!!b.localService)-Number(!!a.localService));
-    voices.forEach(v=>{const option=document.createElement('option');option.value=v.voiceURI;option.textContent=`${v.name} (${v.lang})${v.localService?' · local':''}`;select.append(option);});
-    if(previous!=='auto'&&voices.some(v=>v.voiceURI===previous)){select.value=previous;}else{voiceChoice='auto';select.value='auto';}
-    $('voiceAvailability').textContent=!hasSpeech()?'Este navegador no ofrece lector de voz. El rosco seguirá funcionando con normalidad.':
-      voices.length?`${voices.length} voces en español detectadas. Las voces «local» suelen servir sin Internet. Durante la lectura, el reloj del equipo se detiene.`:
-      'No se detecta una voz española instalada. El navegador intentará pronunciar el español; sin conexión puede no funcionar. El juego seguirá operativo.';
-    renderVoiceButtons();
-  }
-  function renderVoiceButtons(){
-    const enabled=hasSpeech() && voiceMode!=='off';
-    $('readQuestionButton').disabled=!enabled;
-    $('stopReadingButton').disabled=!hasSpeech() || !voiceReading;
-    if(!hasSpeech())setSpeechStatus('Lector no disponible');
-    else if(voiceMode==='off')setSpeechStatus('Lector desactivado');
-  }
-  function readCurrentQuestion(isAutomatic=false){
-    if(!game||game.phase!=='running'||game.paused||!hasSpeech()||voiceMode==='off')return;
-    if(isAutomatic && voiceMode!=='auto')return;
-    stopReading();
-    const q=questionFor(game.cursor), token=voiceSequence;
-    const utterance=new SpeechSynthesisUtterance(`${q.mode==='starts'?'Empieza por':'Contiene la'} ${q.letter}. ${q.clue}`);
-    utterance.lang='es-ES';utterance.rate=voiceRate;utterance.pitch=1;
-    const voices=spanishVoices();
-    const choice=voices.find(v=>v.voiceURI===voiceChoice) || voices.find(v=>v.localService) || voices.find(v=>v.lang.toLowerCase()==='es-es') || voices[0];
-    if(choice)utterance.voice=choice;
-    const release=()=>{if(token!==voiceSequence)return;voiceReading=false;clearVoiceWatchdog();lastTick=performance.now();setSpeechStatus('Lectura terminada');renderVoiceButtons();};
-    utterance.onend=release;utterance.onerror=()=>{release();setSpeechStatus('La voz no se ha podido reproducir. Puedes leer la pregunta manualmente.');};
-    voiceReading=true;setSpeechStatus(`Leyendo la letra ${q.letter} · reloj detenido`,true);renderVoiceButtons();
-    speakingWatchdog=setTimeout(()=>{if(token===voiceSequence){stopReading();setSpeechStatus('Lectura detenida por seguridad; reloj reanudado.');}},45000);
-    try{window.speechSynthesis.speak(utterance);}catch{release();setSpeechStatus('La voz no está disponible en este navegador.');}
-  }
-  function changeVoicePreferences(){
-    voiceMode=$('voiceModeSelect').value;voiceChoice=$('voiceSelect').value;
-    voiceRate=Number($('voiceRateSelect').value)||0.95;alertsEnabled=$('timeAlertsSelect').checked;
-    safeWrite('rosco4d_voice_mode_v51',voiceMode);safeWrite('rosco4d_voice_choice_v51',voiceChoice);
-    safeWrite('rosco4d_voice_rate_v51',voiceRate);safeWrite('rosco4d_time_alerts_v51',alertsEnabled);
-    if(voiceMode==='off')stopReading();renderVoiceButtons();
-  }
-  function initializeVoiceUI(){
-    $('voiceModeSelect').value=voiceMode;$('voiceRateSelect').value=String(voiceRate);
+  function initializeExtrasUI(){
     $('timeAlertsSelect').checked=alertsEnabled;
-    for(const id of ['voiceModeSelect','voiceSelect','voiceRateSelect','timeAlertsSelect'])$(id).addEventListener('change',changeVoicePreferences);
-    if(hasSpeech()){
-      if(window.speechSynthesis.addEventListener)window.speechSynthesis.addEventListener('voiceschanged',loadVoices);
-      else window.speechSynthesis.onvoiceschanged=loadVoices;
-    }
-    loadVoices();
-    $('readQuestionButton').addEventListener('click',()=>readCurrentQuestion());
-    $('stopReadingButton').addEventListener('click',()=>stopReading(true));
+    $('timeAlertsSelect').addEventListener('change',()=>{
+      alertsEnabled=$('timeAlertsSelect').checked;
+      safeWrite('rosco4d_time_alerts_v51',alertsEnabled);
+    });
     $('presenterButton').addEventListener('click',togglePresenter);
     $('presenterRevealButton').addEventListener('click',reveal);
   }
   function togglePresenter(){
     presenterMode=!presenterMode;document.body.classList.toggle('presenter-mode',presenterMode);
     $('presenterButton').setAttribute('aria-pressed',String(presenterMode));
-    $('presenterButton').textContent=presenterMode?'Vista normal':'🎤 Modo presentador';
+    $('presenterButton').textContent=presenterMode?'Vista normal':'🖥️ Modo presentador';
   }
   function alertTime(team,left){
     if(!game||!game.duration||!alertsEnabled||game.phase!=='running')return;
@@ -692,11 +628,11 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     if(!game?.undo)return;
     const action=game.undo.action;
     const wasFinished=game.phase==='finished';
-    stopReading();game=clone(game.undo.previous);
+    game=clone(game.undo.previous);
     delete game.undo;
     lastTick=performance.now();lastPersist=lastTick;
     if(!$('endScreen').classList.contains('is-hidden'))showScreen('game');
-    renderAll();if(wasFinished)startTimer();saveGame();if(game.phase==='running')readCurrentQuestion(true);
+    renderAll();if(wasFinished)startTimer();saveGame();if(game.phase==='running')
     notify(`Se ha deshecho «${action}»: letra, puntuación y turno restaurados.`);
   }
   function saveGame(){if(game && game.phase!=='finished')safeWrite(KEYS.game,game);}
@@ -743,12 +679,12 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
       timeAlerts:[[false,false],[false,false]],startedAt:new Date().toISOString(),reason:''};
     clearSavedGame();if(game.mode==='duel' && game.activeTeam===1)game.cursor=0;launchGame();
   }
-  function launchGame(){if(!game)return;stopReading();$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');$('duelHud').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();readCurrentQuestion(true);}
+  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');$('duelHud').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
   function startTimer(){
     stopTimer();lastTick=performance.now();
     timerInterval=setInterval(()=>{
       const now=performance.now(),delta=Math.max(0,Math.min(1200,now-lastTick));lastTick=now;
-      if(!game||game.duration===0||game.phase!=='running'||game.paused||voiceReading)return;
+      if(!game||game.duration===0||game.phase!=='running'||game.paused)return;
       if(game.mode==='duel'){
         const team=game.activeTeam;
         game.teamRemainingMs[team]=Math.max(0,game.teamRemainingMs[team]-delta);
@@ -756,7 +692,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
         if(game.teamRemainingMs[team]===0){
           sound('pass');
           if(canPlay(1-team)){
-            stopReading();switchTeam();renderAll();saveGame();readCurrentQuestion(true);notify(`¡Tiempo agotado para ${teamName(team)}! Juega ${teamName(game.activeTeam)}.`);
+            switchTeam();renderAll();saveGame();notify(`¡Tiempo agotado para ${teamName(team)}! Juega ${teamName(game.activeTeam)}.`);
           } else finishGame('timeout');
           return;
         }
@@ -818,7 +754,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     if(!game || game.phase==='finished')return;
     if(game.phase==='feedback'){notify('Primero pulsa «Siguiente letra».');return;}
     if(statusesFor()[index]!=='pending'){notify('Esa letra ya está respondida para este equipo.');return;}
-    stopReading();setCursor(index);renderAll();saveGame();readCurrentQuestion(true);
+    setCursor(index);renderAll();saveGame();
   }
   function renderAll(){if(!game)return;renderWheel();renderQuestion();renderScoreboard();renderTimer();renderTurnIndicator();renderUndo();}
   function renderWheel(){
@@ -922,7 +858,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     if(!game || game.phase!=='running' || game.paused)return;
     const oldTeam=game.activeTeam, oldIndex=game.cursor;
     if(statusesFor()[oldIndex]!=='pending')return;
-    stopReading();snapshotForUndo(status==='correct'?'Acierto':'Fallo');
+    snapshotForUndo(status==='correct'?'Acierto':'Fallo');
     statusesFor()[oldIndex]=status;
     if(status==='correct')game.teamScores[oldTeam]++;
     game.feedback=status;game.feedbackCursor=oldIndex;game.feedbackTeam=oldTeam;
@@ -936,7 +872,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
   }
   function pass(){
     if(!game || game.phase!=='running' || game.paused)return;
-    stopReading();snapshotForUndo('Pasapalabra');
+    snapshotForUndo('Pasapalabra');
     game.passes++;
     const nextIndex=nextPending(game.cursor);
     if(game.mode==='duel'){
@@ -944,7 +880,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
       game.teamCursors[game.activeTeam]=nextIndex;
       switchTeam(); // El otro equipo usa su propio cursor, inicialmente A.
     }else if(nextIndex>=0)setCursor(nextIndex);
-    sound('pass');renderAll();saveGame();readCurrentQuestion(true);
+    sound('pass');renderAll();saveGame();
   }
   function next(){
     if(!game || game.phase!=='feedback')return;
@@ -960,7 +896,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
       if(!canPlay(game.activeTeam))switchTeam();
     }else setCursor(nextPending(game.cursor));
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
-    renderAll();saveGame();readCurrentQuestion(true);
+    renderAll();saveGame();
   }
   // V4.8: igualdad exacta con solución o alternativas completas que respetan la letra.
   function matchesFullAnswer(question, rawInput){
@@ -1018,7 +954,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     renderHints();saveGame();sound('pass');
   }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
-  function togglePause(){if(!game || game.phase!=='running')return;stopReading();game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
+  function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
   function makeConfetti(){const target=$('confetti');target.replaceChildren();for(let i=0;i<52;i++){
     const piece=document.createElement('i');piece.style.left=`${(i*73)%100}%`;piece.style.animationDelay=`-${(i*0.17)%4}s`;
     piece.style.animationDuration=`${3.3+(i%7)*.43}s`;piece.style.background=['#1da565','#fff7c2','#d4edb7','#f9f9fa'][i%4];target.append(piece);
@@ -1080,7 +1016,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     }
   }
   function openPreview(){previewTeam=selectedMode==='duel'?'green':selectedSoloBank;renderPreview();openDialog('previewDialog');}
-  function finishGame(reason){stopReading();
+  function finishGame(reason){
     if(!game)return;
     stopTimer();game.phase='finished';game.reason=reason;clearSavedGame();
     $('endTitle').textContent=reason==='timeout'?'¡Tiempo cumplido!':'¡Rosco completado!';
@@ -1117,8 +1053,8 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     });
     $('diplomaButton').classList.toggle('is-hidden',game.mode!=='duel');renderErrorReview();renderUndo();showScreen('end');makeConfetti();sound('finish');
   }
-  function backToSetup(){stopReading();if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
-  function resume(){stopReading();const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
+  function backToSetup(){if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
+  function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
     selectedTeamNames=game.teamNames||['Equipo A','Equipo B'];$('nameGreen').value=selectedTeamNames[0];$('nameWhite').value=selectedTeamNames[1];launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
   function discard(){ask('¿Descartar la partida?','Se eliminará el progreso guardado en este navegador.',()=>{clearSavedGame();game=null;updateResume();notify('Partida descartada.');});}
   function fromNewGame(){const saved=getSavedGame();if(saved){ask('¿Comenzar de cero?','La partida guardada se sustituirá por una nueva.',initGame);}else initGame();}
@@ -1187,7 +1123,7 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
   }
 
   function printAnswers(){if(window.ROSCO_STANDALONE){printStandaloneAnswers();return;}const level=game?.level??selectedLevel;const team=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;window.open(`solucionario.html?curso=${encodeURIComponent(level)}&equipo=${encodeURIComponent(team)}`,'_blank','noopener');}
-  function playAgain(){stopReading();selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}
+  function playAgain(){selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}
 
   function renderSound(){const btn=$('soundButton');btn.setAttribute('aria-pressed',String(!muted));btn.innerHTML=muted?'<svg><use href="#i-volume-off"/></svg>':'<svg><use href="#i-volume"/></svg>';btn.title=muted?'Activar sonido':'Desactivar sonido';}
   function sound(type){if(muted)return;try {const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;if(!audioContext)audioContext=new Context();if(audioContext.state==='suspended')audioContext.resume();const notes=type==='correct'?[520,740]:type==='wrong'?[240,185]:type==='finish'?[500,660,820]:type==='warning'?[820,690,820]:[400];const now=audioContext.currentTime;notes.forEach((freq,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),start=now+i*.105; o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.065,start+.012);g.gain.exponentialRampToValueAtTime(.0001,start+.115);o.connect(g);g.connect(audioContext.destination);o.start(start);o.stop(start+.13);});}catch{/* no molestar si el navegador no permite audio */}}
@@ -1331,17 +1267,17 @@ body.presenter-mode .board-layout{display:block;min-height:0}body.presenter-mode
     $('undoButton').addEventListener('click',undoLast);$('endUndoButton').addEventListener('click',undoLast);
     $('pdiButton').addEventListener('click',togglePdi);$('hintMijita').addEventListener('click',()=>useWildcard('mijita'));
     $('hintCable').addEventListener('click',()=>useWildcard('cable'));
-    $('checkBankButton').addEventListener('click',showAudit);$('diplomaButton').addEventListener('click',printDiploma);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>{selectTeacherGuide('web');openDialog('teacherHelpDialog');});$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');selectTeacherGuide('web');openDialog('teacherHelpDialog');});document.querySelectorAll('#teacherHelpDialog [data-guide-tab]').forEach(btn=>btn.addEventListener('click',()=>selectTeacherGuide(btn.dataset.guideTab)));$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{stopReading();game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
+    $('checkBankButton').addEventListener('click',showAudit);$('diplomaButton').addEventListener('click',printDiploma);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>{selectTeacherGuide('web');openDialog('teacherHelpDialog');});$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');selectTeacherGuide('web');openDialog('teacherHelpDialog');});document.querySelectorAll('#teacherHelpDialog [data-guide-tab]').forEach(btn=>btn.addEventListener('click',()=>selectTeacherGuide(btn.dataset.guideTab)));$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
     $('editTeam').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,e.target.value,editorSelection?.letter??'A'));
     $('editLetter').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,editorSelection?.team??'green',e.target.value));
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));
     $('editorPrevious').addEventListener('click',()=>editorNavigate(-1));
     $('editorNext').addEventListener('click',()=>editorNavigate(1));
-    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('visibilitychange',()=>{if(document.hidden){stopReading();}if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
+    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('visibilitychange',()=>{if(document.hidden){}if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
   // SEGURIDAD DE EVALUACIÓN: sin atajos globales que puntúen al pulsar letras.
   // Solo se evalúa con «Comprobar»/Intro DENTRO de la casilla de respuesta
   // o con los botones explícitos de corrección del docente.
-  function boot(){initializeVoiceUI();makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';}
+  function boot(){initializeExtrasUI();makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';}
   boot();
 })();
 
