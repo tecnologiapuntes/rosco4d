@@ -1,8 +1,8 @@
-# Rosco 4D Andalucía · V4.8 · IES Sidón
+# Rosco 4D Andalucía · V4.9 · IES Sidón
 
 Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216 preguntas**: 27 por equipo × 2 equipos × 4 dificultades.
 
-## NOVEDADES V4.8
+## NOVEDADES V4.9
 
 - Cronómetro de equipo independiente en duelo; solo consume el equipo activo; se detiene durante la corrección, pausa o al finalizar sus 27 letras. Al agotarse el tiempo, el otro equipo puede seguir usando el suyo.
 - Modo PDI de alto contraste visual, controles amplios y preguntas grandes; alterna desde el juego.
@@ -26,7 +26,7 @@ Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216
 La web conserva el solucionario, PDF de ayuda, los cuatro niveles con nombres andaluces y el logo del IES Sidón.
 
 
-## V4.8 · Identificación visual de turnos
+## V4.9 · Identificación visual de turnos
 
 - Equipo **A**, color verde; equipo **B**, color azul. Se conservan los nombres personalizados.
 - Al jugar en duelo, una franja visible indica **AHORA JUEGA** y el equipo, con su letra A/B.
@@ -37,9 +37,17 @@ La web conserva el solucionario, PDF de ayuda, los cuatro niveles con nombres an
 
 **Compatibilidad:** la clave interna `white` sigue identificando al banco B; no cambia ninguna pregunta, respuesta ni regla de validación.
 
-## V4.8 · Guía desde el botón de Ayuda para docentes
+## V4.9 · Guía desde el botón de Ayuda para docentes
 
 - El botón «Ayuda para docentes», en la portada, abre una **guía de seis pasos para editar directamente desde la web publicada**, sin descargar el ZIP.
 - Explica el guardado local, la revisión de las 216 preguntas, la descarga del HTML independiente y cómo abrirlo en la PDI.
 - La misma guía aparece en el HTML portátil y puede imprimirse desde el botón «Imprimir guía».
 - El PDF `GUIA_DOCENTE_EDITAR_DESDE_WEB.pdf` está incluido para compartir con el claustro.
+
+## V4.9 · Ayuda para docentes: dos opciones
+
+El botón «Ayuda para docentes» permite cambiar entre dos pestañas: **Editar desde la web** (sin ZIP) y **Trabajar con el ZIP** (sin conexión). La impresión muestra únicamente la opción activa.
+
+Ambas explican la selección de nivel/equipo/letra, el guardado de cada pregunta, la verificación y la descarga del **HTML personalizado**. Importante: guardar en el navegador NO cambia ni GitHub ni el ZIP original; para trasladar las preguntas hay que descargar el HTML.
+
+La guía también está disponible en `GUIA_DOCENTE.html` y `GUIA_DOCENTE_DOS_OPCIONES.pdf`. Las dos opciones están incorporadas igualmente a los HTML portátiles generados desde el editor.
