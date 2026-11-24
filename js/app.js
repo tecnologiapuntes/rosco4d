@@ -57,7 +57,7 @@
     }
   }
   let selectedLevel='1'; let selectedMode='solo'; let selectedSoloBank='green'; let duration=300;
-  let selectedStartingTeam=0;let selectedTeamNames=['Equipo verde','Equipo blanco'];let pdiMode=safeRead(KEYS.pdi)===true;
+  let selectedStartingTeam=0;let selectedTeamNames=['Equipo A','Equipo B'];let pdiMode=safeRead(KEYS.pdi)===true;
   let game=null; let timerInterval=null; let lastTick=0; let lastPersist=0;
   let muted=safeRead(KEYS.sound)===false; let audioContext=null; let toastTimeout=null; let confirmCallback=null;
   let editorSelection=null; let editorDirty=false;
@@ -95,7 +95,7 @@
   }
   function chooseLevel(value){selectedLevel=value;document.querySelectorAll('.level-card').forEach(btn=>{const active=btn.dataset.level===value;btn.classList.toggle('is-selected',active);btn.setAttribute('aria-pressed',String(active));});}
   function chooseMode(value){selectedMode=value;document.querySelectorAll('#modeOptions button').forEach(btn=>{const active=btn.dataset.mode===value;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});$('soloBankRow').classList.toggle('is-hidden',value==='duel');$('duelSetup').classList.toggle('is-hidden',value!=='duel');}
-  function enterNames(){selectedTeamNames=[$('nameGreen').value.trim().slice(0,26)||'Equipo verde',$('nameWhite').value.trim().slice(0,26)||'Equipo blanco'];return selectedTeamNames;}
+  function enterNames(){selectedTeamNames=[$('nameGreen').value.trim().slice(0,26)||'Equipo A',$('nameWhite').value.trim().slice(0,26)||'Equipo B'];return selectedTeamNames;}
   function drawTeam(){enterNames();selectedStartingTeam=Math.random()<.5?0:1;$('drawResult').textContent=`🎉 ¡Empieza ${selectedTeamNames[selectedStartingTeam]}!`;$('drawResult').classList.remove('is-hidden');}
   function togglePdi(){pdiMode=!pdiMode;document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';safeWrite(KEYS.pdi,pdiMode);}
   function makePreview(){const container=$('previewOrbit');LETTERS.forEach((letter,i)=>{const theta=(i/27)*Math.PI*2-Math.PI/2;const el=document.createElement('span');el.className='preview-letter';el.textContent=letter;el.style.left=`${50+60*Math.cos(theta)}%`;el.style.top=`${50+60*Math.sin(theta)}%`;container.append(el);});}
@@ -149,7 +149,7 @@
     $('teamOneTimer').textContent=timeLabel(game.teamRemainingMs[0]);
     $('teamTwoTimer').textContent=timeLabel(game.teamRemainingMs[1]);
     $('hudGreenTimer').textContent=timeLabel(game.teamRemainingMs[0]);$('hudWhiteTimer').textContent=timeLabel(game.teamRemainingMs[1]);
-    $('hudGreenName').textContent=teamName(0);$('hudWhiteName').textContent=teamName(1);
+    $('hudGreenName').textContent='A · '+teamName(0);$('hudWhiteName').textContent='B · '+teamName(1);
     $('hudGreenScore').textContent=game.teamScores[0];$('hudWhiteScore').textContent=game.teamScores[1];
     $('timerDisplay').setAttribute('aria-label',game.mode==='duel'?`Tiempo de ${teamName(game.activeTeam)}`:'Tiempo de clase');
   }
@@ -186,9 +186,9 @@
     if(statusesFor()[index]!=='pending'){notify('Esa letra ya está respondida para este equipo.');return;}
     setCursor(index);renderAll();saveGame();
   }
-  function renderAll(){if(!game)return;renderWheel();renderQuestion();renderScoreboard();renderTimer();}
+  function renderAll(){if(!game)return;renderWheel();renderQuestion();renderScoreboard();renderTimer();renderTurnIndicator();}
   function renderWheel(){
-    const states=statusesFor();let correct=0;
+    const states=statusesFor(visibleTeam() ?? game.activeTeam);let correct=0;
     document.querySelectorAll('.letter-btn').forEach((btn,i)=>{
       const status=states[i];
       btn.classList.toggle('is-current',i===game.cursor && game.phase!=='finished' && status==='pending');
@@ -199,14 +199,43 @@
     });
     $('coreCorrect').textContent=correct;
   }
-  function teamName(team){return game?.teamNames?.[team] || selectedTeamNames[team] || (team===0?'Equipo verde':'Equipo blanco');}
+  // V4.7: el equipo que aparece en la pregunta es el que determina el color.
+  // Tras un fallo, la explicación todavía pertenece al equipo anterior:
+  // el aviso anticipa quién jugará al pulsar «Siguiente letra».
+  function visibleTeam(){
+    if(!game || game.mode!=='duel')return null;
+    return game.phase==='feedback' && [0,1].includes(game.feedbackTeam) ? game.feedbackTeam : game.activeTeam;
+  }
+  function renderTurnIndicator(){
+    const duel=game.mode==='duel';
+    $('turnBanner').classList.toggle('is-hidden',!duel);
+    $('gameScreen').dataset.turnTeam=duel?(visibleTeam()===0?'a':'b'):'solo';
+    $('duelHud').setAttribute('aria-label',duel?'Marcadores y cronómetros. Equipo activo: '+(visibleTeam()===0?'A':'B'):'Marcadores');
+    $('hudGreen').classList.toggle('is-playing',duel && visibleTeam()===0);
+    $('hudWhite').classList.toggle('is-playing',duel && visibleTeam()===1);
+    if(!duel){$('coreTeamLabel').textContent='ROSCO';return;}
+    const team=visibleTeam(), letter=team===0?'A':'B';
+    $('turnTeamLetter').textContent=letter;
+    $('turnTeamName').textContent=teamName(team);
+    $('coreTeamLabel').textContent='EQUIPO '+letter;
+    const feedback=game.phase==='feedback';
+    $('turnKicker').textContent=feedback?'RESPUESTA DEL EQUIPO '+letter:'AHORA JUEGA · EQUIPO '+letter;
+    const next=feedback && game.activeTeam!==team;
+    $('turnNext').classList.toggle('is-hidden',!next);
+    $('turnNext').textContent=next?'DESPUÉS: EQUIPO '+(game.activeTeam===0?'A':'B')+' · '+teamName(game.activeTeam):'';
+    $('teamOne').classList.toggle('active',team===0);
+    $('teamTwo').classList.toggle('active',team===1);
+    $('hudGreenName').textContent='A · '+teamName(0);
+    $('hudWhiteName').textContent='B · '+teamName(1);
+  }
+  function teamName(team){return game?.teamNames?.[team] || selectedTeamNames[team] || (team===0?'Equipo A':'Equipo B');}
   function renderQuestion(){
     const inFeedback=game.phase==='feedback';
     const index=inFeedback ? (game.feedbackCursor??game.cursor) : game.cursor;
     const q=questionFor(index,inFeedback ? game.feedbackTeam : game.activeTeam);
     $('questionCounter').textContent=`LETRA ${index+1} DE 27 · ${ordinal[game.level]}`;
     $('gameTitle').textContent=game.mode==='duel'
-      ? (inFeedback ? `Respuesta de ${teamName(game.feedbackTeam)}` : `Turno de ${teamName(game.activeTeam)}`)
+      ? (inFeedback ? `Respuesta · Equipo ${game.feedbackTeam===0?'A':'B'}` : `Turno · Equipo ${game.activeTeam===0?'A':'B'}`)
       : levelNames[game.level];
     $('letterMini').textContent=q.letter;
     $('letterRule').textContent=q.mode==='starts'?`EMPIEZA POR LA ${q.letter}`:`CONTIENE LA ${q.letter}`;
@@ -239,11 +268,11 @@
     }
   }
   function renderScoreboard(){
-    const states=statusesFor();
+    const states=statusesFor(visibleTeam() ?? game.activeTeam);
     const c=states.filter(v=>v==='correct').length,w=states.filter(v=>v==='wrong').length,p=27-c-w;
     $('scoreCorrect').textContent=c;$('scoreWrong').textContent=w;$('scorePending').textContent=p;
     $('progressCorrect').style.width=`${c/27*100}%`;$('progressWrong').style.width=`${w/27*100}%`;
-    $('progressLabel').textContent=game.mode==='duel'?`PROGRESO DE ${teamName(game.activeTeam).toUpperCase()}`:'PROGRESO DEL ROSCO';
+    $('progressLabel').textContent=game.mode==='duel'?`PROGRESO DEL EQUIPO ${visibleTeam()===0?'A':'B'} · ${teamName(visibleTeam()).toUpperCase()}`:'PROGRESO DEL ROSCO';
     $('teamOneScore').textContent=game.teamScores[0];$('teamTwoScore').textContent=game.teamScores[1];
     $('teamNameOne').textContent=teamName(0);$('teamNameTwo').textContent=teamName(1);
     $('teamOne').classList.toggle('active',game.activeTeam===0);
@@ -297,7 +326,7 @@
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
     renderAll();saveGame();
   }
-  // V4.5: igualdad exacta con solución o alternativas completas que respetan la letra.
+  // V4.7: igualdad exacta con solución o alternativas completas que respetan la letra.
   function matchesFullAnswer(question, rawInput){
     const typed=norm(rawInput);
     if(!question || typed.length<2)return false;
@@ -402,7 +431,7 @@
   }
   function backToSetup(){if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
   function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
-    selectedTeamNames=game.teamNames||['Equipo verde','Equipo blanco'];$('nameGreen').value=selectedTeamNames[0];$('nameWhite').value=selectedTeamNames[1];launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
+    selectedTeamNames=game.teamNames||['Equipo A','Equipo B'];$('nameGreen').value=selectedTeamNames[0];$('nameWhite').value=selectedTeamNames[1];launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
   function discard(){ask('¿Descartar la partida?','Se eliminará el progreso guardado en este navegador.',()=>{clearSavedGame();game=null;updateResume();notify('Partida descartada.');});}
   function fromNewGame(){const saved=getSavedGame();if(saved){ask('¿Comenzar de cero?','La partida guardada se sustituirá por una nueva.',initGame);}else initGame();}
 
@@ -442,7 +471,7 @@
     const chosen=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;
     const teams=chosen==='both'?['green','white']:[chosen];
     const title='Rosco 4D · Solucionario · '+ordinal[level];
-    const blocks=teams.map(team=>`<section class="team"><h2>${team==='green'?'🟢 Equipo verde':'⚪ Equipo blanco'}</h2><div class="rows">${bank[level][team].map(q=>`<article><div class="letter">${escapeHTML(q.letter)}</div><div><small>${q.mode==='starts'?'EMPIEZA POR LA':'CONTIENE LA'} ${escapeHTML(q.letter)}</small><p>${escapeHTML(q.clue)}</p><strong>${escapeHTML(q.answer)}</strong><em>${escapeHTML(q.fact)}</em></div></article>`).join('')}</div></section>`).join('');
+    const blocks=teams.map(team=>`<section class="team"><h2>${team==='green'?'🟢 Equipo A (verde)':'🔵 Equipo B (azul)'}</h2><div class="rows">${bank[level][team].map(q=>`<article><div class="letter">${escapeHTML(q.letter)}</div><div><small>${q.mode==='starts'?'EMPIEZA POR LA':'CONTIENE LA'} ${escapeHTML(q.letter)}</small><p>${escapeHTML(q.clue)}</p><strong>${escapeHTML(q.answer)}</strong><em>${escapeHTML(q.fact)}</em></div></article>`).join('')}</div></section>`).join('');
     const content=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)}</title><style>body{font:14px/1.45 system-ui,Arial,sans-serif;color:#1b4431;margin:25px auto;max-width:1050px;padding:0 20px}h1{color:#087846;margin-bottom:0}.intro{color:#52705c}.buttons{display:flex;justify-content:flex-end;gap:10px}button{padding:11px 17px;background:#12834e;color:white;border:0;border-radius:9px;cursor:pointer}.team{margin:28px 0}.team h2{background:#e1f2e5;padding:10px;border-radius:8px}.rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px}article{display:flex;gap:10px;border-bottom:1px solid #d8e6dc;padding:8px 0;break-inside:avoid}.letter{font-weight:900;background:#148449;color:white;border-radius:50%;width:28px;height:28px;min-width:28px;display:grid;place-items:center}small{font-weight:800;color:#247853;font-size:10px}article p{margin:3px 0}article strong{display:block}article em{display:block;color:#617869;font-size:11px;font-style:normal;margin-top:3px}@media print{@page{size:A4;margin:12mm}.buttons{display:none}.rows{grid-template-columns:1fr 1fr}body{padding:0;margin:0;font-size:11px}article{padding:5px 0}.team{break-before:auto}}</style></head><body><div class="buttons"><button onclick="window.print()">Imprimir / Guardar PDF</button></div><h1>${escapeHTML(title)}</h1><p class="intro">IES Sidón · Día de la Bandera de Andalucía · Solucionario personalizado para el profesorado</p>${blocks}</body></html>`;
     const popup=window.open('','_blank');
     if(!popup){notify('Permite las ventanas emergentes para ver el solucionario.');return;}
@@ -488,7 +517,7 @@
       btn.title=`Editar ${l} · Equipo ${team==='green'?'verde':'blanco'}`;btn.setAttribute('aria-pressed',String(l===letter));
       btn.addEventListener('click',()=>editorChoose(level,team,l));container.append(btn);
     });
-    $('editorSummary').textContent=`${ordinal[level]} · 27 preguntas del equipo verde + 27 del blanco · 54 preguntas distintas`;
+    $('editorSummary').textContent=`${ordinal[level]} · 27 preguntas del equipo A + 27 del B · 54 preguntas distintas`;
     $('editorTeamIndicator').textContent=`EQUIPO ${team==='green'?'VERDE':'BLANCO'}`;
     $('editorTeamIndicator').className='editor-team-indicator '+team;
   }
@@ -581,7 +610,7 @@
       if(!validBank(candidate))throw new Error('El JSON debe contener 4 niveles × 2 equipos × 27 letras, con respuestas válidas y diferentes entre equipos.');
       if(editorDirty && !window.confirm('Se perderán los cambios sin guardar. ¿Importar igualmente?'))return;
       bank=clone(candidate);safeWrite(KEYS.bank,bank);loadEditor();
-      notify(legacy?'Banco antiguo importado para el equipo verde. Se conserva el banco blanco.':'Importadas las 216 preguntas de los dos equipos.');
+      notify(legacy?'Banco antiguo importado para el equipo A. Se conserva el banco B.':'Importadas las 216 preguntas de los dos equipos.');
     }catch(err){$('editorError').textContent=`No se pudo importar: ${err.message}`;}
     finally{input.value='';}
   }

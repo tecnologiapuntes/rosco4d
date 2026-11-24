@@ -1,8 +1,8 @@
-# Rosco 4D Andalucía · V4.6 · IES Sidón
+# Rosco 4D Andalucía · V4.7 · IES Sidón
 
 Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216 preguntas**: 27 por equipo × 2 equipos × 4 dificultades.
 
-## NOVEDADES V4.6
+## NOVEDADES V4.7
 
 - Cronómetro de equipo independiente en duelo; solo consume el equipo activo; se detiene durante la corrección, pausa o al finalizar sus 27 letras. Al agotarse el tiempo, el otro equipo puede seguir usando el suyo.
 - Modo PDI de alto contraste visual, controles amplios y preguntas grandes; alterna desde el juego.
@@ -24,3 +24,15 @@ Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216
 **Recuerda:** el navegador guarda cambios locales solo en ese navegador, pero el HTML descargado los incorpora. Para usar nuevas ediciones en otra PDI, descarga un nuevo HTML.
 
 La web conserva el solucionario, PDF de ayuda, los cuatro niveles con nombres andaluces y el logo del IES Sidón.
+
+
+## V4.7 · Identificación visual de turnos
+
+- Equipo **A**, color verde; equipo **B**, color azul. Se conservan los nombres personalizados.
+- Al jugar en duelo, una franja visible indica **AHORA JUEGA** y el equipo, con su letra A/B.
+- El color del borde de las preguntas, la zona central del rosco y los marcadores identifica al equipo.
+- Al fallar, la pantalla de corrección identifica qué equipo acaba de responder y cuál juega después.
+- También funciona en el **HTML portátil** exportado desde el editor.
+- La guía `GUIA_DOCENTE_EDITAR_DESDE_WEB.pdf` está incluida para compartir con el claustro.
+
+**Compatibilidad:** la clave interna `white` sigue identificando al banco B; no cambia ninguna pregunta, respuesta ni regla de validación.
