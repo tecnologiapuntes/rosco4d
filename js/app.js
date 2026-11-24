@@ -61,6 +61,96 @@
   let game=null; let timerInterval=null; let lastTick=0; let lastPersist=0;
   let muted=safeRead(KEYS.sound)===false; let audioContext=null; let toastTimeout=null; let confirmCallback=null;
   let editorSelection=null; let editorDirty=false;
+
+  // V5.1: lector local Web Speech API (sin enviar preguntas a ningún servidor propio).
+  // El motor de voz depende del navegador y de las voces instaladas en cada PDI.
+  let voiceMode=safeRead('rosco4d_voice_mode_v51')||'auto';
+  if(!['auto','manual','off'].includes(voiceMode))voiceMode='auto';
+  let voiceRate=Number(safeRead('rosco4d_voice_rate_v51'))||0.95;
+  let voiceChoice=safeRead('rosco4d_voice_choice_v51')||'auto';
+  let alertsEnabled=safeRead('rosco4d_time_alerts_v51')!==false;
+  let presenterMode=false;
+  let voiceReading=false, voiceSequence=0, speakingWatchdog=null;
+  const hasSpeech=()=>typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined';
+  function setSpeechStatus(message,active=false){$('speechStatus').textContent=message;$('speechStatus').classList.toggle('speaking',active);}
+  function clearVoiceWatchdog(){if(speakingWatchdog!==null){clearTimeout(speakingWatchdog);speakingWatchdog=null;}}
+  function stopReading(announce=false){
+    voiceSequence++;clearVoiceWatchdog();voiceReading=false;
+    if(hasSpeech()){try{window.speechSynthesis.cancel();}catch{}}
+    setSpeechStatus(announce?'Lectura detenida':'Lector preparado');renderVoiceButtons();
+    lastTick=performance.now();
+  }
+  function spanishVoices(){if(!hasSpeech())return [];return window.speechSynthesis.getVoices().filter(v=>/^es([-_]|$)/i.test(v.lang));}
+  function loadVoices(){
+    const select=$('voiceSelect');if(!select)return;
+    const previous=voiceChoice;select.replaceChildren();
+    const auto=document.createElement('option');auto.value='auto';auto.textContent='Automática · español disponible';select.append(auto);
+    const voices=spanishVoices();
+    voices.sort((a,b)=>Number(!!b.localService)-Number(!!a.localService));
+    voices.forEach(v=>{const option=document.createElement('option');option.value=v.voiceURI;option.textContent=`${v.name} (${v.lang})${v.localService?' · local':''}`;select.append(option);});
+    if(previous!=='auto'&&voices.some(v=>v.voiceURI===previous)){select.value=previous;}else{voiceChoice='auto';select.value='auto';}
+    $('voiceAvailability').textContent=!hasSpeech()?'Este navegador no ofrece lector de voz. El rosco seguirá funcionando con normalidad.':
+      voices.length?`${voices.length} voces en español detectadas. Las voces «local» suelen servir sin Internet. Durante la lectura, el reloj del equipo se detiene.`:
+      'No se detecta una voz española instalada. El navegador intentará pronunciar el español; sin conexión puede no funcionar. El juego seguirá operativo.';
+    renderVoiceButtons();
+  }
+  function renderVoiceButtons(){
+    const enabled=hasSpeech() && voiceMode!=='off';
+    $('readQuestionButton').disabled=!enabled;
+    $('stopReadingButton').disabled=!hasSpeech() || !voiceReading;
+    if(!hasSpeech())setSpeechStatus('Lector no disponible');
+    else if(voiceMode==='off')setSpeechStatus('Lector desactivado');
+  }
+  function readCurrentQuestion(isAutomatic=false){
+    if(!game||game.phase!=='running'||game.paused||!hasSpeech()||voiceMode==='off')return;
+    if(isAutomatic && voiceMode!=='auto')return;
+    stopReading();
+    const q=questionFor(game.cursor), token=voiceSequence;
+    const utterance=new SpeechSynthesisUtterance(`${q.mode==='starts'?'Empieza por':'Contiene la'} ${q.letter}. ${q.clue}`);
+    utterance.lang='es-ES';utterance.rate=voiceRate;utterance.pitch=1;
+    const voices=spanishVoices();
+    const choice=voices.find(v=>v.voiceURI===voiceChoice) || voices.find(v=>v.localService) || voices.find(v=>v.lang.toLowerCase()==='es-es') || voices[0];
+    if(choice)utterance.voice=choice;
+    const release=()=>{if(token!==voiceSequence)return;voiceReading=false;clearVoiceWatchdog();lastTick=performance.now();setSpeechStatus('Lectura terminada');renderVoiceButtons();};
+    utterance.onend=release;utterance.onerror=()=>{release();setSpeechStatus('La voz no se ha podido reproducir. Puedes leer la pregunta manualmente.');};
+    voiceReading=true;setSpeechStatus(`Leyendo la letra ${q.letter} · reloj detenido`,true);renderVoiceButtons();
+    speakingWatchdog=setTimeout(()=>{if(token===voiceSequence){stopReading();setSpeechStatus('Lectura detenida por seguridad; reloj reanudado.');}},45000);
+    try{window.speechSynthesis.speak(utterance);}catch{release();setSpeechStatus('La voz no está disponible en este navegador.');}
+  }
+  function changeVoicePreferences(){
+    voiceMode=$('voiceModeSelect').value;voiceChoice=$('voiceSelect').value;
+    voiceRate=Number($('voiceRateSelect').value)||0.95;alertsEnabled=$('timeAlertsSelect').checked;
+    safeWrite('rosco4d_voice_mode_v51',voiceMode);safeWrite('rosco4d_voice_choice_v51',voiceChoice);
+    safeWrite('rosco4d_voice_rate_v51',voiceRate);safeWrite('rosco4d_time_alerts_v51',alertsEnabled);
+    if(voiceMode==='off')stopReading();renderVoiceButtons();
+  }
+  function initializeVoiceUI(){
+    $('voiceModeSelect').value=voiceMode;$('voiceRateSelect').value=String(voiceRate);
+    $('timeAlertsSelect').checked=alertsEnabled;
+    for(const id of ['voiceModeSelect','voiceSelect','voiceRateSelect','timeAlertsSelect'])$(id).addEventListener('change',changeVoicePreferences);
+    if(hasSpeech()){
+      if(window.speechSynthesis.addEventListener)window.speechSynthesis.addEventListener('voiceschanged',loadVoices);
+      else window.speechSynthesis.onvoiceschanged=loadVoices;
+    }
+    loadVoices();
+    $('readQuestionButton').addEventListener('click',()=>readCurrentQuestion());
+    $('stopReadingButton').addEventListener('click',()=>stopReading(true));
+    $('presenterButton').addEventListener('click',togglePresenter);
+    $('presenterRevealButton').addEventListener('click',reveal);
+  }
+  function togglePresenter(){
+    presenterMode=!presenterMode;document.body.classList.toggle('presenter-mode',presenterMode);
+    $('presenterButton').setAttribute('aria-pressed',String(presenterMode));
+    $('presenterButton').textContent=presenterMode?'Vista normal':'🎤 Modo presentador';
+  }
+  function alertTime(team,left){
+    if(!game||!game.duration||!alertsEnabled||game.phase!=='running')return;
+    if(!Array.isArray(game.timeAlerts))game.timeAlerts=[[false,false],[false,false]];
+    const flags=game.timeAlerts[team] ||= [false,false];
+    if(left<=30000 && left>0 && !flags[0]){flags[0]=true;sound('warning');notify(`Quedan 30 segundos para ${game.mode==='duel'?teamName(team):'la clase'}.`);}
+    if(left<=10000 && left>0 && !flags[1]){flags[1]=true;sound('warning');notify(`¡Últimos 10 segundos para ${game.mode==='duel'?teamName(team):'la clase'}!`);}
+  }
+
   const screens={setup:$('setupScreen'),game:$('gameScreen'),end:$('endScreen')};
 
   function showScreen(name) {Object.entries(screens).forEach(([k,v]) => v.classList.toggle('is-hidden',k!==name));window.scrollTo({top:0,behavior:'instant'});}
@@ -68,6 +158,28 @@
   function openDialog(id) {$(id).showModal();}
   function closeDialog(id) {$(id).close();}
   function ask(title,message,fn){$('confirmHeading').textContent=title;$('confirmBody').textContent=message;confirmCallback=fn;openDialog('confirmDialog');}
+  function snapshotForUndo(action){
+    if(!game || game.phase!=='running')return;
+    const previous=clone(game);delete previous.undo;
+    game.undo={action,previous};
+  }
+  function renderUndo(){
+    const available=!!game?.undo;
+    $('undoButton').disabled=!available;
+    $('endUndoButton').disabled=!available;
+    $('undoButton').title=available?`Deshacer: ${game.undo.action}`:'Todavía no hay acciones que deshacer';
+  }
+  function undoLast(){
+    if(!game?.undo)return;
+    const action=game.undo.action;
+    const wasFinished=game.phase==='finished';
+    stopReading();game=clone(game.undo.previous);
+    delete game.undo;
+    lastTick=performance.now();lastPersist=lastTick;
+    if(!$('endScreen').classList.contains('is-hidden'))showScreen('game');
+    renderAll();if(wasFinished)startTimer();saveGame();if(game.phase==='running')readCurrentQuestion(true);
+    notify(`Se ha deshecho «${action}»: letra, puntuación y turno restaurados.`);
+  }
   function saveGame(){if(game && game.phase!=='finished')safeWrite(KEYS.game,game);}
   function clearSavedGame(){try{localStorage.removeItem(KEYS.game);}catch{} }
   function getSavedGame(){
@@ -109,27 +221,29 @@
       teamCursors:[0,0],passes:0,soloBank:selectedSoloBank,questions:clone(bank[selectedLevel]),
       wildcardsUsed:[{mijita:false,cable:false},{mijita:false,cable:false}],hints:[{},{}],
       feedback:null,feedbackCursor:null,feedbackTeam:null,
-      startedAt:new Date().toISOString(),reason:''};
+      timeAlerts:[[false,false],[false,false]],startedAt:new Date().toISOString(),reason:''};
     clearSavedGame();if(game.mode==='duel' && game.activeTeam===1)game.cursor=0;launchGame();
   }
-  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');$('duelHud').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
+  function launchGame(){if(!game)return;stopReading();$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');$('duelHud').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();readCurrentQuestion(true);}
   function startTimer(){
     stopTimer();lastTick=performance.now();
     timerInterval=setInterval(()=>{
       const now=performance.now(),delta=Math.max(0,Math.min(1200,now-lastTick));lastTick=now;
-      if(!game||game.duration===0||game.phase!=='running'||game.paused)return;
+      if(!game||game.duration===0||game.phase!=='running'||game.paused||voiceReading)return;
       if(game.mode==='duel'){
         const team=game.activeTeam;
         game.teamRemainingMs[team]=Math.max(0,game.teamRemainingMs[team]-delta);
+        alertTime(team,game.teamRemainingMs[team]);
         if(game.teamRemainingMs[team]===0){
           sound('pass');
           if(canPlay(1-team)){
-            switchTeam();renderAll();saveGame();notify(`¡Tiempo agotado para ${teamName(team)}! Juega ${teamName(game.activeTeam)}.`);
+            stopReading();switchTeam();renderAll();saveGame();readCurrentQuestion(true);notify(`¡Tiempo agotado para ${teamName(team)}! Juega ${teamName(game.activeTeam)}.`);
           } else finishGame('timeout');
           return;
         }
       }else{
         game.remainingMs=Math.max(0,game.remainingMs-delta);
+        alertTime(0,game.remainingMs);
         if(game.remainingMs===0){finishGame('timeout');return;}
       }
       renderTimer();
@@ -142,6 +256,7 @@
   function renderTimer(){
     const display=$('timerDisplay'), left=timeLeft();
     $('timeValue').textContent=timeLabel(left);
+    $('timeFlash').classList.toggle('is-hidden',!game.duration || left>10000 || left===0 || game.phase!=='running');
     display.classList.toggle('time-warning',!!game.duration && left<=60000 && left>20000);
     display.classList.toggle('time-critical',!!game.duration && left<=20000);
     $('pauseButton').disabled=game.phase==='feedback';
@@ -184,9 +299,9 @@
     if(!game || game.phase==='finished')return;
     if(game.phase==='feedback'){notify('Primero pulsa «Siguiente letra».');return;}
     if(statusesFor()[index]!=='pending'){notify('Esa letra ya está respondida para este equipo.');return;}
-    setCursor(index);renderAll();saveGame();
+    stopReading();setCursor(index);renderAll();saveGame();readCurrentQuestion(true);
   }
-  function renderAll(){if(!game)return;renderWheel();renderQuestion();renderScoreboard();renderTimer();renderTurnIndicator();}
+  function renderAll(){if(!game)return;renderWheel();renderQuestion();renderScoreboard();renderTimer();renderTurnIndicator();renderUndo();}
   function renderWheel(){
     const states=statusesFor(visibleTeam() ?? game.activeTeam);let correct=0;
     document.querySelectorAll('.letter-btn').forEach((btn,i)=>{
@@ -199,7 +314,7 @@
     });
     $('coreCorrect').textContent=correct;
   }
-  // V4.7: el equipo que aparece en la pregunta es el que determina el color.
+  // V4.8: el equipo que aparece en la pregunta es el que determina el color.
   // Tras un fallo, la explicación todavía pertenece al equipo anterior:
   // el aviso anticipa quién jugará al pulsar «Siguiente letra».
   function visibleTeam(){
@@ -288,6 +403,7 @@
     if(!game || game.phase!=='running' || game.paused)return;
     const oldTeam=game.activeTeam, oldIndex=game.cursor;
     if(statusesFor()[oldIndex]!=='pending')return;
+    stopReading();snapshotForUndo(status==='correct'?'Acierto':'Fallo');
     statusesFor()[oldIndex]=status;
     if(status==='correct')game.teamScores[oldTeam]++;
     game.feedback=status;game.feedbackCursor=oldIndex;game.feedbackTeam=oldTeam;
@@ -301,6 +417,7 @@
   }
   function pass(){
     if(!game || game.phase!=='running' || game.paused)return;
+    stopReading();snapshotForUndo('Pasapalabra');
     game.passes++;
     const nextIndex=nextPending(game.cursor);
     if(game.mode==='duel'){
@@ -308,7 +425,7 @@
       game.teamCursors[game.activeTeam]=nextIndex;
       switchTeam(); // El otro equipo usa su propio cursor, inicialmente A.
     }else if(nextIndex>=0)setCursor(nextIndex);
-    sound('pass');renderAll();saveGame();
+    sound('pass');renderAll();saveGame();readCurrentQuestion(true);
   }
   function next(){
     if(!game || game.phase!=='feedback')return;
@@ -324,9 +441,9 @@
       if(!canPlay(game.activeTeam))switchTeam();
     }else setCursor(nextPending(game.cursor));
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
-    renderAll();saveGame();
+    renderAll();saveGame();readCurrentQuestion(true);
   }
-  // V4.7: igualdad exacta con solución o alternativas completas que respetan la letra.
+  // V4.8: igualdad exacta con solución o alternativas completas que respetan la letra.
   function matchesFullAnswer(question, rawInput){
     const typed=norm(rawInput);
     if(!question || typed.length<2)return false;
@@ -382,7 +499,7 @@
     renderHints();saveGame();sound('pass');
   }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
-  function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
+  function togglePause(){if(!game || game.phase!=='running')return;stopReading();game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
   function makeConfetti(){const target=$('confetti');target.replaceChildren();for(let i=0;i<52;i++){
     const piece=document.createElement('i');piece.style.left=`${(i*73)%100}%`;piece.style.animationDelay=`-${(i*0.17)%4}s`;
     piece.style.animationDuration=`${3.3+(i%7)*.43}s`;piece.style.background=['#1da565','#fff7c2','#d4edb7','#f9f9fa'][i%4];target.append(piece);
@@ -392,7 +509,59 @@
     const page=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Diploma Rosco 4D</title><style>body{font-family:system-ui;text-align:center;padding:50px;border:16px double #15955b;color:#164a33}h1{font-size:55px;margin:35px 0 0}h2{font-size:38px}p{font-size:22px}strong{color:#067747}@page{size:A4 landscape;margin:14mm}</style></head><body><p>IES SIDÓN · DÍA DE LA BANDERA DE ANDALUCÍA</p><h1>🏆 DIPLOMA 4D</h1><p>Se reconoce a</p><h2>${escapeHTML(winner)}</h2><p>por su participación en <strong>ROSCO 4D ANDALUCÍA</strong></p><p>${escapeHTML(ordinal[game.level])} · ${a} / ${b} aciertos</p><p>¡Con conocimiento, alegría y mucho arte!</p><p>________________________ · Docente</p></body></html>`;
     const w=window.open('','_blank');if(!w){notify('Permite ventanas emergentes para imprimir el diploma.');return;}w.document.open();w.document.write(page);w.document.close();w.focus();w.print();
   }
-  function finishGame(reason){
+  function renderErrorReview(){
+    const details=$('errorReview'), list=$('errorReviewList'), summary=$('errorReviewSummary');
+    list.replaceChildren();details.open=false;
+    const teams=game.mode==='duel'?[0,1]:[0];
+    const counts=teams.map(t=>{
+      const wrong=statusesFor(t).map((s,i)=>s==='wrong'?i:-1).filter(i=>i>=0);
+      return {team:t, wrong};
+    });
+    const total=counts.reduce((n,r)=>n+r.wrong.length,0);
+    summary.textContent=`📖 Repasar ${total} pregunta${total===1?'':'s'} fallada${total===1?'':'s'} · desplegar`;
+    if(!total){
+      const p=document.createElement('p');p.className='review-empty';p.textContent='¡Sin errores! No hay preguntas falladas que repasar.';list.append(p);return;
+    }
+    for(const group of counts){
+      if(game.mode==='duel'){
+        const head=document.createElement('h3');head.className='review-team-head';
+        head.textContent=`Equipo ${group.team===0?'A':'B'} · ${teamName(group.team)} · ${group.wrong.length} fallos`;
+        list.append(head);
+      }
+      for(const index of group.wrong){
+        const q=questionFor(index,group.team);
+        const article=document.createElement('article');article.className='review-item';
+        const title=document.createElement('p');title.className='review-title';
+        title.textContent=`Letra ${q.letter} · ${q.mode==='starts'?'Empieza por':'Contiene la'} ${q.letter}`;
+        const clue=document.createElement('p');clue.className='review-clue';clue.textContent=q.clue;
+        const answer=document.createElement('p');answer.className='review-answer';answer.textContent=`Respuesta: ${q.answer}`;
+        const fact=document.createElement('p');fact.className='review-fact';fact.textContent=q.fact||'';
+        article.append(title,clue,answer,fact);list.append(article);
+      }
+    }
+  }
+  let previewTeam='green';
+  function renderPreview(){
+    const dual=selectedMode==='duel';
+    $('previewTabs').classList.toggle('is-hidden',!dual);
+    const level=Number(selectedLevel), team=dual?previewTeam:selectedSoloBank;
+    $('previewTitle').textContent=`Vista previa · ${ordinal[level]}`;
+    $('previewIntro').textContent=`${dual?'Duelo: 27 preguntas diferentes para cada equipo':'Clase completa: 27 preguntas'} · ${team==='green'?'Equipo A (verde)':'Equipo B (azul)'}. Las soluciones no se muestran.`;
+    document.querySelectorAll('[data-preview-team]').forEach(btn=>{
+      const selected=btn.dataset.previewTeam===team;btn.setAttribute('aria-pressed',String(selected));
+    });
+    const target=$('previewList');target.replaceChildren();
+    for(const q of bank[level][team]){
+      const article=document.createElement('article');article.className='preview-item';
+      const letter=document.createElement('span');letter.className='preview-item-letter';letter.textContent=q.letter;
+      const info=document.createElement('div');const rule=document.createElement('small');
+      rule.textContent=`${q.mode==='starts'?'EMPIEZA POR':'CONTIENE LA'} ${q.letter}`;
+      const clue=document.createElement('p');clue.textContent=q.clue;
+      info.append(rule,clue);article.append(letter,info);target.append(article);
+    }
+  }
+  function openPreview(){previewTeam=selectedMode==='duel'?'green':selectedSoloBank;renderPreview();openDialog('previewDialog');}
+  function finishGame(reason){stopReading();
     if(!game)return;
     stopTimer();game.phase='finished';game.reason=reason;clearSavedGame();
     $('endTitle').textContent=reason==='timeout'?'¡Tiempo cumplido!':'¡Rosco completado!';
@@ -427,10 +596,10 @@
       });
       section.append(letters);container.append(section);
     });
-    $('diplomaButton').classList.toggle('is-hidden',game.mode!=='duel');showScreen('end');makeConfetti();sound('finish');
+    $('diplomaButton').classList.toggle('is-hidden',game.mode!=='duel');renderErrorReview();renderUndo();showScreen('end');makeConfetti();sound('finish');
   }
-  function backToSetup(){if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
-  function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
+  function backToSetup(){stopReading();if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
+  function resume(){stopReading();const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
     selectedTeamNames=game.teamNames||['Equipo A','Equipo B'];$('nameGreen').value=selectedTeamNames[0];$('nameWhite').value=selectedTeamNames[1];launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
   function discard(){ask('¿Descartar la partida?','Se eliminará el progreso guardado en este navegador.',()=>{clearSavedGame();game=null;updateResume();notify('Partida descartada.');});}
   function fromNewGame(){const saved=getSavedGame();if(saved){ask('¿Comenzar de cero?','La partida guardada se sustituirá por una nueva.',initGame);}else initGame();}
@@ -477,19 +646,32 @@
     if(!popup){notify('Permite las ventanas emergentes para ver el solucionario.');return;}
     popup.document.open();popup.document.write(content);popup.document.close();
   }
+  function selectTeacherGuide(mode){
+    const selected=mode==='zip'?'zip':'web';
+    document.querySelectorAll('#teacherHelpDialog [data-guide-tab]').forEach(btn=>{
+      const on=btn.dataset.guideTab===selected;
+      btn.classList.toggle('active',on);
+      btn.setAttribute('aria-selected',String(on));
+    });
+    document.querySelectorAll('#teacherHelpDialog [data-guide-panel]').forEach(panel=>{
+      panel.hidden=panel.dataset.guidePanel!==selected;
+    });
+  }
   function printTeacherGuide(){
-    // Las instrucciones están dentro de la web: se abren en modo imprimible.
-    const guide=document.querySelector('#teacherHelpDialog .dialog-body');
-    const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Guía docente · Rosco 4D · IES Sidón</title><style>body{font:15px/1.55 system-ui,Arial;max-width:800px;margin:30px auto;padding:0 18px;color:#1b4431}h1{color:#077343}h2{font-size:19px}.teacher-help-lead{margin:16px 0;background:#eaf8eb;padding:13px}.teacher-help-lead span{display:block}.teacher-steps>div{display:flex;gap:15px;padding:11px 0;border-bottom:1px solid #dae7dd}.teacher-steps p{margin:0;flex:1}.step-num{font-weight:900;color:#05834a}.teacher-alert{border:2px solid #e1a13d;background:#fff9e6;border-radius:10px;padding:12px;margin:20px 0}.dialog-small{font-size:13px}@page{size:A4;margin:15mm}</style></head><body><h1>ROSCO 4D · Guía para el profesorado</h1><p>IES Sidón · Andalucía · Del ordenador de casa a la PDI</p>${guide.innerHTML}</body></html>`;
+    // Solo imprime la modalidad seleccionada, sin pestañas ni instrucciones ocultas.
+    const panel=document.querySelector('#teacherHelpDialog [data-guide-panel]:not([hidden])');
+    if(!panel)return;
+    const label=panel.dataset.guidePanel==='zip'?'Descargar ZIP y editar sin Internet':'Editar directamente desde la web';
+    const printable=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Rosco 4D · ${label} · IES Sidón</title><style>body{font:14px/1.55 system-ui,Arial;max-width:790px;margin:25px auto;padding:0 16px;color:#1b4431}h1{color:#077343;font-size:25px}.teacher-help-lead{margin:12px 0;background:#eaf8eb;padding:13px;border-radius:10px}.teacher-help-lead span{display:block}.teacher-steps>div{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #dae7dd;break-inside:avoid}.teacher-steps p{margin:0;flex:1}.step-num{font-weight:900;color:#05834a}.teacher-alert{border:2px solid #e1a13d;background:#fff9e6;border-radius:10px;padding:11px;margin:15px 0}.dialog-small{font-size:12px}@page{size:A4;margin:15mm}</style></head><body><h1>ROSCO 4D · Guía docente</h1><p>IES Sidón · Día de la Bandera de Andalucía · ${label}</p>${panel.innerHTML}</body></html>`;
     const popup=window.open('','_blank');if(!popup){notify('Permite las ventanas emergentes para imprimir la guía.');return;}
-    popup.document.open();popup.document.write(html);popup.document.close();popup.focus();popup.print();
+    popup.document.open();popup.document.write(printable);popup.document.close();popup.focus();popup.print();
   }
 
   function printAnswers(){if(window.ROSCO_STANDALONE){printStandaloneAnswers();return;}const level=game?.level??selectedLevel;const team=game?.mode==='duel'?'both':game?.soloBank??selectedSoloBank;window.open(`solucionario.html?curso=${encodeURIComponent(level)}&equipo=${encodeURIComponent(team)}`,'_blank','noopener');}
-  function playAgain(){selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}
+  function playAgain(){stopReading();selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}
 
   function renderSound(){const btn=$('soundButton');btn.setAttribute('aria-pressed',String(!muted));btn.innerHTML=muted?'<svg><use href="#i-volume-off"/></svg>':'<svg><use href="#i-volume"/></svg>';btn.title=muted?'Activar sonido':'Desactivar sonido';}
-  function sound(type){if(muted)return;try {const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;if(!audioContext)audioContext=new Context();if(audioContext.state==='suspended')audioContext.resume();const notes=type==='correct'?[520,740]:type==='wrong'?[240,185]:type==='finish'?[500,660,820]:[400];const now=audioContext.currentTime;notes.forEach((freq,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),start=now+i*.105; o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.065,start+.012);g.gain.exponentialRampToValueAtTime(.0001,start+.115);o.connect(g);g.connect(audioContext.destination);o.start(start);o.stop(start+.13);});}catch{/* no molestar si el navegador no permite audio */}}
+  function sound(type){if(muted)return;try {const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;if(!audioContext)audioContext=new Context();if(audioContext.state==='suspended')audioContext.resume();const notes=type==='correct'?[520,740]:type==='wrong'?[240,185]:type==='finish'?[500,660,820]:type==='warning'?[820,690,820]:[400];const now=audioContext.currentTime;notes.forEach((freq,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),start=now+i*.105; o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.065,start+.012);g.gain.exponentialRampToValueAtTime(.0001,start+.115);o.connect(g);g.connect(audioContext.destination);o.start(start);o.stop(start+.13);});}catch{/* no molestar si el navegador no permite audio */}}
   async function toggleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{notify('Usa F11 para activar pantalla completa.');}}
 
   // Editor completo: 4 niveles × 2 equipos × 27 letras = 216 preguntas.
@@ -625,19 +807,22 @@
 
   // Eventos de interfaz.
   function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('drawTeamButton').addEventListener('click',drawTeam);
+    $('previewButton').addEventListener('click',openPreview);
+    document.querySelectorAll('[data-preview-team]').forEach(btn=>btn.addEventListener('click',()=>{previewTeam=btn.dataset.previewTeam;renderPreview();}));
+    $('undoButton').addEventListener('click',undoLast);$('endUndoButton').addEventListener('click',undoLast);
     $('pdiButton').addEventListener('click',togglePdi);$('hintMijita').addEventListener('click',()=>useWildcard('mijita'));
     $('hintCable').addEventListener('click',()=>useWildcard('cable'));
-    $('checkBankButton').addEventListener('click',showAudit);$('diplomaButton').addEventListener('click',printDiploma);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
+    $('checkBankButton').addEventListener('click',showAudit);$('diplomaButton').addEventListener('click',printDiploma);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>{selectTeacherGuide('web');openDialog('teacherHelpDialog');});$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');selectTeacherGuide('web');openDialog('teacherHelpDialog');});document.querySelectorAll('#teacherHelpDialog [data-guide-tab]').forEach(btn=>btn.addEventListener('click',()=>selectTeacherGuide(btn.dataset.guideTab)));$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{stopReading();game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
     $('editTeam').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,e.target.value,editorSelection?.letter??'A'));
     $('editLetter').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,editorSelection?.team??'green',e.target.value));
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));
     $('editorPrevious').addEventListener('click',()=>editorNavigate(-1));
     $('editorNext').addEventListener('click',()=>editorNavigate(1));
-    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('visibilitychange',()=>{if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
+    $('restoreQuestion').addEventListener('click',restoreQuestion);$('editorForm').addEventListener('submit',saveEditor);$('exportQuestions').addEventListener('click',exportBank);$('importQuestions').addEventListener('change',importBank);$('resetQuestions').addEventListener('click',resetBank);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeDialog(btn.dataset.close)));$('confirmYes').addEventListener('click',()=>{closeDialog('confirmDialog');const callback=confirmCallback;confirmCallback=null;if(callback)callback();});document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();}));document.addEventListener('visibilitychange',()=>{if(document.hidden){stopReading();}if(document.hidden&&game&&game.phase==='running'&&!game.paused){game.paused=true;saveGame();renderTimer();renderQuestion();}});window.addEventListener('beforeunload',saveGame);}
   // SEGURIDAD DE EVALUACIÓN: sin atajos globales que puntúen al pulsar letras.
   // Solo se evalúa con «Comprobar»/Intro DENTRO de la casilla de respuesta
   // o con los botones explícitos de corrección del docente.
-  function boot(){makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';}
+  function boot(){initializeVoiceUI();makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';}
   boot();
 })();
 

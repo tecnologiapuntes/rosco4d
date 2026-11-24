@@ -1,53 +1,31 @@
-# Rosco 4D Andalucía · V4.9 · IES Sidón
+# ROSCO 4D ANDALUCÍA — V5.1 · IES SIDÓN
 
-Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216 preguntas**: 27 por equipo × 2 equipos × 4 dificultades.
+Esta entrega parte del repositorio `rosco4d.rar` facilitado por el centro (V5.0) y conserva los 216 enunciados, los cuatro niveles, dos equipos con roscos independientes, editor y exportación HTML, ayudas docentes, vista previa, Deshacer, comodines y repaso de fallos.
 
-## NOVEDADES V4.9
+## Novedades V5.1
 
-- Cronómetro de equipo independiente en duelo; solo consume el equipo activo; se detiene durante la corrección, pausa o al finalizar sus 27 letras. Al agotarse el tiempo, el otro equipo puede seguir usando el suyo.
-- Modo PDI de alto contraste visual, controles amplios y preguntas grandes; alterna desde el juego.
-- Nombres propios y sorteo opcional del equipo inicial.
-- Comodines: una «mijita» (segunda letra) y «¡Échame un cable!» (longitud y última letra), una vez por equipo; la ayuda no puntúa.
-- Pantalla de victoria con porcentajes, confeti y diploma imprimible.
-- Verificador docente de las 216 preguntas, revisa pista, respuesta, alternativas y duplicados antes de exportar.
-- Exportación con nombre personalizado: UN HTML autocontenido que funciona sin conexión en una PDI.
-- Respuestas: comparación exacta de la palabra o expresión; una sola letra o respuesta abreviada NO puntúa. Se han retirado las alternativas que solo eran prefijos incompletos de respuestas más largas.
+- **Lector de preguntas:** en español, configurable como automático, manual o desactivado. Incluye selección de voz y tres velocidades. No lee soluciones. Detiene el cronómetro mientras pronuncia la pregunta. Depende de la síntesis de voz del navegador y las voces instaladas; sin Internet solo estará disponible si la voz correspondiente es local.
+- **Modo presentador:** oculta el rosco circular y agranda la pregunta para la PDI, manteniendo las acciones docentes y el botón para mostrar/ocultar la respuesta en pantalla.
+- **Avisos de tiempo:** a los 30 y 10 segundos, por equipo, visuales y con sonido opcional. Pueden desactivarse en la portada.
 
-## USO
-1. Abre `index.html` en Chrome, Firefox o Edge. También puedes publicarlo en GitHub Pages.
-2. Selecciona dificultad, duelo o clase; si hay duelo escribe nombres y sortea el comienzo.
-3. Juega en la PDI, pulsa «Modo PDI» para facilitar el uso táctil.
-4. En Editor docente, cambia nivel, equipo, letra, pista, solución y explicación; guarda cada pregunta.
-5. Pulsa «Verificar las 216 preguntas» y después «Descargar mi rosco para PDI (.html)».
-6. Abre el HTML obtenido directamente en la PDI o compártelo con el profesorado. ¡No depende de carpetas ni de Internet!
+## Publicación en GitHub Pages
 
-**Recuerda:** el navegador guarda cambios locales solo en ese navegador, pero el HTML descargado los incorpora. Para usar nuevas ediciones en otra PDI, descarga un nuevo HTML.
+Para evitar conflictos anteriores, **sube SOLO el nuevo `index.html` a la raíz de la rama `main`** de tu repositorio. El `index.html` es autónomo e incorpora estilos, el banco de preguntas, el código y la plantilla exportable. Los archivos de `js/` y `css/` están sincronizados para servir como fuentes editables, pero no son necesarios para publicar.
 
-La web conserva el solucionario, PDF de ayuda, los cuatro niveles con nombres andaluces y el logo del IES Sidón.
+## Uso en PDI
 
+- Abre `index.html` en Chrome/Edge o publica en GitHub Pages.
+- Elige nivel, equipos y tiempo. En «Presentador virtual» configura el lector y avisos.
+- Juega. En la parte superior pulsa «Modo presentador» para agrandar la pregunta.
+- Edita en «Editor docente», guarda cada pregunta y selecciona «Descargar mi rosco para PDI» para obtener **un solo HTML** con tus cambios y las nuevas funciones.
+- Si no se detecta ninguna voz española, se podrá seguir jugando y corregir manualmente. Una PDI sin Internet requiere una voz española local instalada para leer en voz alta.
 
-## V4.9 · Identificación visual de turnos
+## Archivos
 
-- Equipo **A**, color verde; equipo **B**, color azul. Se conservan los nombres personalizados.
-- Al jugar en duelo, una franja visible indica **AHORA JUEGA** y el equipo, con su letra A/B.
-- El color del borde de las preguntas, la zona central del rosco y los marcadores identifica al equipo.
-- Al fallar, la pantalla de corrección identifica qué equipo acaba de responder y cuál juega después.
-- También funciona en el **HTML portátil** exportado desde el editor.
-- La guía `GUIA_DOCENTE_EDITAR_DESDE_WEB.pdf` está incluida para compartir con el claustro.
+- `index.html` — web completa autónoma V5.1 para GitHub Pages
+- `Rosco_4D_V5_1_LISTO_PARA_PDI.html` — HTML autónomo con preguntas originales
+- `css/styles.css`, `js/app.js`, `js/questions.js`, `js/portable-template.js` — fuentes y banco para mantenimiento
+- `solucionario.html` — solucionario
+- `GUIA_DOCENTE.html` y PDFs — guías para docentes (los PDF explican el flujo de V4.9, que se mantiene)
 
-**Compatibilidad:** la clave interna `white` sigue identificando al banco B; no cambia ninguna pregunta, respuesta ni regla de validación.
-
-## V4.9 · Guía desde el botón de Ayuda para docentes
-
-- El botón «Ayuda para docentes», en la portada, abre una **guía de seis pasos para editar directamente desde la web publicada**, sin descargar el ZIP.
-- Explica el guardado local, la revisión de las 216 preguntas, la descarga del HTML independiente y cómo abrirlo en la PDI.
-- La misma guía aparece en el HTML portátil y puede imprimirse desde el botón «Imprimir guía».
-- El PDF `GUIA_DOCENTE_EDITAR_DESDE_WEB.pdf` está incluido para compartir con el claustro.
-
-## V4.9 · Ayuda para docentes: dos opciones
-
-El botón «Ayuda para docentes» permite cambiar entre dos pestañas: **Editar desde la web** (sin ZIP) y **Trabajar con el ZIP** (sin conexión). La impresión muestra únicamente la opción activa.
-
-Ambas explican la selección de nivel/equipo/letra, el guardado de cada pregunta, la verificación y la descarga del **HTML personalizado**. Importante: guardar en el navegador NO cambia ni GitHub ni el ZIP original; para trasladar las preguntas hay que descargar el HTML.
-
-La guía también está disponible en `GUIA_DOCENTE.html` y `GUIA_DOCENTE_DOS_OPCIONES.pdf`. Las dos opciones están incorporadas igualmente a los HTML portátiles generados desde el editor.
+Nota: el motor Web Speech API no requiere una API de pago, pero la disponibilidad de voces locales depende del sistema operativo. El lector no envía respuestas a un servidor del proyecto.
