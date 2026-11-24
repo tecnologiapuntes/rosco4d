@@ -1,3 +1,4 @@
+
 /* Rosco 4D Andalucía · IES Sidón
    Aplicación estática: sin dependencias, sin servidores ni servicios de pago. */
 (() => {
@@ -5,7 +6,7 @@
   const LETTERS = [...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'];
   const BASE_BANK = JSON.parse(JSON.stringify(window.ROSCO_QUESTIONS));
   const installationKey = window.ROSCO_STANDALONE ? '_portable_'+String(window.ROSCO_PORTABLE_ID||'default') : '_v4';
-  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v45'+installationKey,sound:'rosco4d_sound_v1'};
+  const KEYS = {bank:'rosco4d_custom_bank'+installationKey,legacy:'rosco4d_custom_bank_v1',game:'rosco4d_saved_game_v46'+installationKey,sound:'rosco4d_sound_v1',pdi:'rosco4d_pdi_v1'};
   const $ = (id) => document.getElementById(id);
   const ordinal = {1:"¡Con salero!",2:"¡Olé tu arte!",3:"¡Aquí hay duende!",4:"¡Quillo, qué nivelazo!"};
   const levelNames = {1:"Para entrar en compás",2:"La cosa se anima",3:"Hay que tener tablas",4:"Para auténticas eminencias"};
@@ -19,8 +20,10 @@
     if(word.length<2 || !l)return false;
     return mode==='starts' ? word.startsWith(l) : word.includes(l);
   };
+  // Nunca se admite una abreviatura que sea prefijo estricto de la respuesta principal.
+  const incompleteAlias = (alias,answer) => {const a=norm(alias),b=norm(answer);return a.length<3 || (a!==b && b.startsWith(a));};
   const testLetter = (q) => fitsLetter(q.mode,q.letter,q.answer);
-  const validEntry = (q,l) => q && q.letter===l && ['starts','contains'].includes(q.mode) && typeof q.answer==='string' && testLetter(q) && typeof q.clue==='string' && q.clue.trim() && typeof q.fact==='string' && Array.isArray(q.aliases) && q.aliases.every(v => typeof v==='string' && fitsLetter(q.mode,q.letter,v));
+  const validEntry = (q,l) => q && q.letter===l && ['starts','contains'].includes(q.mode) && typeof q.answer==='string' && testLetter(q) && typeof q.clue==='string' && q.clue.trim() && typeof q.fact==='string' && Array.isArray(q.aliases) && q.aliases.every(v => typeof v==='string' && !incompleteAlias(v,q.answer) && fitsLetter(q.mode,q.letter,v));
   // Conserva las ediciones guardadas de versiones anteriores; solo descarta alternativas inválidas.
   const cleanAliases = (data) => {
     if(data && typeof data==='object')for(const l of [1,2,3,4]){
@@ -28,7 +31,7 @@
       // Compatible tanto con el banco anterior de un solo equipo como con el nuevo doble.
       const lists=Array.isArray(group)?[group]:['green','white'].map(t=>group?.[t]).filter(Array.isArray);
       for(const list of lists)for(const q of list){
-        if(q && Array.isArray(q.aliases))q.aliases=q.aliases.filter(a=>typeof a==='string' && fitsLetter(q.mode,q.letter,a));
+        if(q && Array.isArray(q.aliases))q.aliases=q.aliases.filter(a=>typeof a==='string' && !incompleteAlias(a,q.answer) && fitsLetter(q.mode,q.letter,a));
       }
     }
     return data;
@@ -54,6 +57,7 @@
     }
   }
   let selectedLevel='1'; let selectedMode='solo'; let selectedSoloBank='green'; let duration=300;
+  let selectedStartingTeam=0;let selectedTeamNames=['Equipo verde','Equipo blanco'];let pdiMode=safeRead(KEYS.pdi)===true;
   let game=null; let timerInterval=null; let lastTick=0; let lastPersist=0;
   let muted=safeRead(KEYS.sound)===false; let audioContext=null; let toastTimeout=null; let confirmCallback=null;
   let editorSelection=null; let editorDirty=false;
@@ -71,12 +75,15 @@
     if(!data || ![1,2,3,4].includes(Number(data.level)) || !data.questions || !['green','white'].every(t=>Array.isArray(data.questions[t]) && data.questions[t].length===27 && data.questions[t].every((q,i)=>validEntry(q,LETTERS[i]))) ||
        !['running','feedback'].includes(data.phase) || !['solo','duel'].includes(data.mode) || typeof data.duration!=='number' || !['green','white'].includes(data.soloBank))return null;
     if(data.mode==='duel'){
-      if(!Array.isArray(data.teamStatuses) || data.teamStatuses.length!==2 ||
+      if(!Array.isArray(data.teamRemainingMs) || data.teamRemainingMs.length!==2 || !data.teamRemainingMs.every(n=>Number.isFinite(n)&&n>=0) ||
+         !Array.isArray(data.teamNames) || data.teamNames.length!==2 ||
+         !Array.isArray(data.teamStatuses) || data.teamStatuses.length!==2 ||
          !data.teamStatuses.every(a=>Array.isArray(a) && a.length===27 && a.every(v=>['pending','correct','wrong'].includes(v))) ||
          !Array.isArray(data.teamCursors) || data.teamCursors.length!==2 ||
          !data.teamCursors.every(n=>Number.isInteger(n) && n>=-1 && n<27) ||
          ![0,1].includes(data.activeTeam))return null;
     }else if(!Array.isArray(data.statuses) || data.statuses.length!==27)return null;
+    if(!Array.isArray(data.wildcardsUsed) || data.wildcardsUsed.length!==2 || !Array.isArray(data.hints)||data.hints.length!==2)return null;
     return data;
   }
   function updateResume(){
@@ -87,37 +94,79 @@
     }
   }
   function chooseLevel(value){selectedLevel=value;document.querySelectorAll('.level-card').forEach(btn=>{const active=btn.dataset.level===value;btn.classList.toggle('is-selected',active);btn.setAttribute('aria-pressed',String(active));});}
-  function chooseMode(value){selectedMode=value;document.querySelectorAll('#modeOptions button').forEach(btn=>{const active=btn.dataset.mode===value;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});$('soloBankRow').classList.toggle('is-hidden',value==='duel');}
+  function chooseMode(value){selectedMode=value;document.querySelectorAll('#modeOptions button').forEach(btn=>{const active=btn.dataset.mode===value;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});$('soloBankRow').classList.toggle('is-hidden',value==='duel');$('duelSetup').classList.toggle('is-hidden',value!=='duel');}
+  function enterNames(){selectedTeamNames=[$('nameGreen').value.trim().slice(0,26)||'Equipo verde',$('nameWhite').value.trim().slice(0,26)||'Equipo blanco'];return selectedTeamNames;}
+  function drawTeam(){enterNames();selectedStartingTeam=Math.random()<.5?0:1;$('drawResult').textContent=`🎉 ¡Empieza ${selectedTeamNames[selectedStartingTeam]}!`;$('drawResult').classList.remove('is-hidden');}
+  function togglePdi(){pdiMode=!pdiMode;document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';safeWrite(KEYS.pdi,pdiMode);}
   function makePreview(){const container=$('previewOrbit');LETTERS.forEach((letter,i)=>{const theta=(i/27)*Math.PI*2-Math.PI/2;const el=document.createElement('span');el.className='preview-letter';el.textContent=letter;el.style.left=`${50+60*Math.cos(theta)}%`;el.style.top=`${50+60*Math.sin(theta)}%`;container.append(el);});}
   function initWheel(){const target=$('roscoLetters'); target.replaceChildren(); LETTERS.forEach((letter,i)=>{const theta=(i/27)*Math.PI*2-Math.PI/2;const btn=document.createElement('button');btn.type='button';btn.className='letter-btn';btn.textContent=letter;btn.setAttribute('aria-label',`Letra ${letter}`);btn.dataset.index=String(i);btn.style.left=`${50+43.3*Math.cos(theta)}%`;btn.style.top=`${50+43.3*Math.sin(theta)}%`;btn.addEventListener('click',()=>jumpTo(i));target.append(btn);});}
   function initGame(){
     game={level:Number(selectedLevel),mode:selectedMode,duration,remainingMs:duration*1000,phase:'running',paused:false,
-      cursor:0,activeTeam:0,teamScores:[0,0],
+      cursor:0,activeTeam:selectedMode==='duel'?selectedStartingTeam:0,teamScores:[0,0],teamNames:enterNames(),
+      teamRemainingMs:[duration*1000,duration*1000],
       statuses:LETTERS.map(()=> 'pending'),
       teamStatuses:[LETTERS.map(()=> 'pending'),LETTERS.map(()=> 'pending')],
-      teamCursors:[0,0], passes:0,soloBank:selectedSoloBank,questions:clone(bank[selectedLevel]),
+      teamCursors:[0,0],passes:0,soloBank:selectedSoloBank,questions:clone(bank[selectedLevel]),
+      wildcardsUsed:[{mijita:false,cable:false},{mijita:false,cable:false}],hints:[{},{}],
       feedback:null,feedbackCursor:null,feedbackTeam:null,
       startedAt:new Date().toISOString(),reason:''};
-    clearSavedGame();launchGame();
+    clearSavedGame();if(game.mode==='duel' && game.activeTeam===1)game.cursor=0;launchGame();
   }
-  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
-  function startTimer(){if(timerInterval!==null)clearInterval(timerInterval);lastTick=performance.now();timerInterval=setInterval(()=>{const now=performance.now(),delta=Math.max(0,Math.min(3000,now-lastTick));lastTick=now;if(!game || game.duration===0 || game.phase!=='running' || game.paused)return;game.remainingMs=Math.max(0,game.remainingMs-delta);renderTimer();if(now-lastPersist>2500){saveGame();lastPersist=now;}if(game.remainingMs<=0)finishGame('timeout');},200);}
+  function launchGame(){if(!game)return;$('gameLevelChip').textContent=`${ordinal[game.level]}`;$('gameModeChip').textContent=game.mode==='duel'?'DUELO · 2 EQUIPOS':`CLASE · BANCO ${game.soloBank==='green'?'VERDE':'BLANCO'}`;$('teamsRow').classList.toggle('is-hidden',game.mode!=='duel');$('duelHud').classList.toggle('is-hidden',game.mode!=='duel');showScreen('game');renderAll();lastTick=performance.now();startTimer();saveGame();}
+  function startTimer(){
+    stopTimer();lastTick=performance.now();
+    timerInterval=setInterval(()=>{
+      const now=performance.now(),delta=Math.max(0,Math.min(1200,now-lastTick));lastTick=now;
+      if(!game||game.duration===0||game.phase!=='running'||game.paused)return;
+      if(game.mode==='duel'){
+        const team=game.activeTeam;
+        game.teamRemainingMs[team]=Math.max(0,game.teamRemainingMs[team]-delta);
+        if(game.teamRemainingMs[team]===0){
+          sound('pass');
+          if(canPlay(1-team)){
+            switchTeam();renderAll();saveGame();notify(`¡Tiempo agotado para ${teamName(team)}! Juega ${teamName(game.activeTeam)}.`);
+          } else finishGame('timeout');
+          return;
+        }
+      }else{
+        game.remainingMs=Math.max(0,game.remainingMs-delta);
+        if(game.remainingMs===0){finishGame('timeout');return;}
+      }
+      renderTimer();
+      if(now-lastPersist>2000){saveGame();lastPersist=now;}
+    },160);
+  }
   function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null;}}
-  function timeLabel(){if(!game || !game.duration)return '∞';const seconds=Math.ceil(game.remainingMs/1000);return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
-  function renderTimer(){const display=$('timerDisplay');$('timeValue').textContent=timeLabel();display.classList.toggle('time-warning',!!game?.duration && game.remainingMs<=60000 && game.remainingMs>20000);display.classList.toggle('time-critical',!!game?.duration && game.remainingMs<=20000);$('pauseButton').disabled=!!game && game.phase==='feedback';$('pauseButton').innerHTML=game?.paused?'<svg><use href="#i-play"/></svg><span>Reanudar</span>':'<svg><use href="#i-pause"/></svg><span>Pausar</span>';}
+  function timeLabel(ms){if(!game || !game.duration)return '∞';const seconds=Math.ceil(Math.max(0,ms)/1000);return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
+  function timeLeft(team=game.activeTeam){return game.mode==='duel'?game.teamRemainingMs[team]:game.remainingMs;}
+  function renderTimer(){
+    const display=$('timerDisplay'), left=timeLeft();
+    $('timeValue').textContent=timeLabel(left);
+    display.classList.toggle('time-warning',!!game.duration && left<=60000 && left>20000);
+    display.classList.toggle('time-critical',!!game.duration && left<=20000);
+    $('pauseButton').disabled=game.phase==='feedback';
+    $('pauseButton').innerHTML=game.paused?'<svg><use href="#i-play"/></svg><span>Reanudar</span>':'<svg><use href="#i-pause"/></svg><span>Pausar</span>';
+    $('teamOneTimer').textContent=timeLabel(game.teamRemainingMs[0]);
+    $('teamTwoTimer').textContent=timeLabel(game.teamRemainingMs[1]);
+    $('hudGreenTimer').textContent=timeLabel(game.teamRemainingMs[0]);$('hudWhiteTimer').textContent=timeLabel(game.teamRemainingMs[1]);
+    $('hudGreenName').textContent=teamName(0);$('hudWhiteName').textContent=teamName(1);
+    $('hudGreenScore').textContent=game.teamScores[0];$('hudWhiteScore').textContent=game.teamScores[1];
+    $('timerDisplay').setAttribute('aria-label',game.mode==='duel'?`Tiempo de ${teamName(game.activeTeam)}`:'Tiempo de clase');
+  }
   // Cada equipo conserva SUS 27 estados y SU letra actual. La rueda visible es la del equipo en turno.
   function statusesFor(team=game.activeTeam){return game.mode==='duel' ? game.teamStatuses[team] : game.statuses;}
   function teamKey(team=game.activeTeam){return game.mode==='duel'?(team===0?'green':'white'):game.soloBank;}
   function questionFor(index,team=game.activeTeam){return game.questions[teamKey(team)][index];}
   function remaining(team=game.activeTeam){return statusesFor(team).filter(v=>v==='pending').length;}
-  function allDone(){return game.mode==='duel' ? remaining(0)===0 && remaining(1)===0 : remaining()===0;}
+  function canPlay(team){return remaining(team)>0 && (game.duration===0 || game.teamRemainingMs[team]>0);}
+  function allDone(){return game.mode==='duel' ? !canPlay(0) && !canPlay(1) : remaining()===0;}
   function setCursor(index){game.cursor=index;if(game.mode==='duel')game.teamCursors[game.activeTeam]=index;}
   function switchTeam(){
     if(game.mode!=='duel')return;
     const other=1-game.activeTeam;
     // Si el contrincante terminó su rosco, no se le vuelve a dar un turno vacío.
-    if(remaining(other)>0)game.activeTeam=other;
-    if(remaining(game.activeTeam)>0){
+    if(canPlay(other))game.activeTeam=other;
+    if(canPlay(game.activeTeam)){
       let index=game.teamCursors[game.activeTeam];
       if(!Number.isInteger(index) || index<0 || statusesFor()[index]!=='pending')index=nextPending((index+26)%27);
       setCursor(index);
@@ -145,23 +194,24 @@
       btn.classList.toggle('is-current',i===game.cursor && game.phase!=='finished' && status==='pending');
       btn.classList.toggle('is-correct',status==='correct');
       btn.classList.toggle('is-wrong',status==='wrong');
-      btn.setAttribute('aria-label',`${LETTERS[i]}: ${status==='correct'?'acierto':status==='wrong'?'fallo':i===game.cursor?'pregunta actual':'pendiente'}${game.mode==='duel' ? ' del equipo '+teamName(game.activeTeam) : ''}`);
+      btn.setAttribute('aria-label',`${LETTERS[i]}: ${status==='correct'?'acierto':status==='wrong'?'fallo':i===game.cursor?'pregunta actual':'pendiente'}${game.mode==='duel' ? ' de '+teamName(game.activeTeam) : ''}`);
       if(status==='correct')correct++;
     });
     $('coreCorrect').textContent=correct;
   }
-  function teamName(team){return team===0?'verde':'blanco';}
+  function teamName(team){return game?.teamNames?.[team] || selectedTeamNames[team] || (team===0?'Equipo verde':'Equipo blanco');}
   function renderQuestion(){
     const inFeedback=game.phase==='feedback';
     const index=inFeedback ? (game.feedbackCursor??game.cursor) : game.cursor;
     const q=questionFor(index,inFeedback ? game.feedbackTeam : game.activeTeam);
     $('questionCounter').textContent=`LETRA ${index+1} DE 27 · ${ordinal[game.level]}`;
     $('gameTitle').textContent=game.mode==='duel'
-      ? (inFeedback ? `Respuesta del equipo ${teamName(game.feedbackTeam)}` : `Turno del equipo ${teamName(game.activeTeam)}`)
+      ? (inFeedback ? `Respuesta de ${teamName(game.feedbackTeam)}` : `Turno de ${teamName(game.activeTeam)}`)
       : levelNames[game.level];
     $('letterMini').textContent=q.letter;
     $('letterRule').textContent=q.mode==='starts'?`EMPIEZA POR LA ${q.letter}`:`CONTIENE LA ${q.letter}`;
     $('questionText').textContent=q.clue;
+    renderHints();
     $('answerInput').disabled=inFeedback || game.paused;
     $('checkInputButton').disabled=inFeedback || game.paused;
     $('correctButton').disabled=game.paused || (!inFeedback && $('answerInput').value.trim().length>0);
@@ -179,13 +229,13 @@
       $('feedbackCard').classList.toggle('is-wrong',!correct);
       $('feedbackIcon').textContent=correct?'✓':'×';
       $('feedbackTitle').textContent=correct
-        ? (game.mode==='duel'?`¡Correcto! Sigue el equipo ${teamName(game.activeTeam)}`:'¡Respuesta correcta!')
-        : (game.mode==='duel'?`Fallo · ahora juega el equipo ${teamName(game.activeTeam)}`:'¡Seguimos aprendiendo!');
+        ? (game.mode==='duel'?`¡Correcto! Sigue ${teamName(game.activeTeam)}`:'¡Respuesta correcta!')
+        : (game.mode==='duel'?`Fallo · ahora juega ${teamName(game.activeTeam)}`:'¡Seguimos aprendiendo!');
       $('feedbackAnswer').textContent=`Respuesta: ${q.answer}`;
       $('feedbackFact').textContent=q.fact;
       $('feedbackAttempt').textContent=game.feedbackSource==='typed' ? `Has escrito: «${game.feedbackInput||''}».` : 'Respuesta marcada por el docente (oral).';
       $('nextButton').textContent='';
-      $('nextButton').textContent=game.mode==='duel' && !correct ? `Continuar con equipo ${teamName(game.activeTeam)} →` : 'Siguiente letra →';
+      $('nextButton').textContent=game.mode==='duel' && !correct ? `Continuar con ${teamName(game.activeTeam)} →` : 'Siguiente letra →';
     }
   }
   function renderScoreboard(){
@@ -193,8 +243,9 @@
     const c=states.filter(v=>v==='correct').length,w=states.filter(v=>v==='wrong').length,p=27-c-w;
     $('scoreCorrect').textContent=c;$('scoreWrong').textContent=w;$('scorePending').textContent=p;
     $('progressCorrect').style.width=`${c/27*100}%`;$('progressWrong').style.width=`${w/27*100}%`;
-    $('progressLabel').textContent=game.mode==='duel'?`PROGRESO DEL EQUIPO ${teamName(game.activeTeam).toUpperCase()}`:'PROGRESO DEL ROSCO';
+    $('progressLabel').textContent=game.mode==='duel'?`PROGRESO DE ${teamName(game.activeTeam).toUpperCase()}`:'PROGRESO DEL ROSCO';
     $('teamOneScore').textContent=game.teamScores[0];$('teamTwoScore').textContent=game.teamScores[1];
+    $('teamNameOne').textContent=teamName(0);$('teamNameTwo').textContent=teamName(1);
     $('teamOne').classList.toggle('active',game.activeTeam===0);
     $('teamTwo').classList.toggle('active',game.activeTeam===1);
     $('teamOneProgress').textContent=game.mode==='duel'?`${27-remaining(0)}/27 letras`:'';
@@ -237,11 +288,11 @@
       // En acierto continúa el mismo equipo. En fallo el otro equipo ya quedó activado.
       if(game.feedback==='correct'){
         const active=game.activeTeam;
-        if(remaining(active)>0)setCursor(game.teamCursors[active]);
+        if(canPlay(active))setCursor(game.teamCursors[active]);
         else switchTeam();
       }
       // Si el jugador entrante había terminado, vuelve al único equipo con pendientes.
-      if(remaining(game.activeTeam)===0)switchTeam();
+      if(!canPlay(game.activeTeam))switchTeam();
     }else setCursor(nextPending(game.cursor));
     game.phase='running';game.feedback=null;game.feedbackCursor=null;game.feedbackTeam=null;
     renderAll();saveGame();
@@ -253,7 +304,7 @@
     const candidates=[question.answer,...(Array.isArray(question.aliases)?question.aliases:[])];
     return candidates.some(candidate=>{
       const full=norm(candidate);
-      return full.length>=2 && fitsLetter(question.mode,question.letter,candidate) && typed===full;
+      return full.length>=2 && (full===norm(question.answer) || !incompleteAlias(candidate,question.answer)) && fitsLetter(question.mode,question.letter,candidate) && typed===full;
     });
   }
   function checkTyped(){
@@ -272,8 +323,46 @@
     const question=questionFor(game.cursor);
     mark(matchesFullAnswer(question,text)?'correct':'wrong','typed',text);
   }
+  function currentHintKey(){return String(game.cursor);}
+  function renderHints(){
+    if(!game)return;
+    const team=game.mode==='duel'?game.activeTeam:0;
+    const key=game.phase==='feedback'?String(game.feedbackCursor):currentHintKey();
+    const messages=game.hints?.[team]?.[key] || [];
+    $('wildcardHint').textContent=messages.join('  ·  ');
+    $('wildcardHint').classList.toggle('is-hidden',messages.length===0 || game.phase==='feedback');
+    const used=game.wildcardsUsed?.[team]||{};
+    for(const type of ['mijita','cable']){
+      const el=$(type==='mijita'?'hintMijita':'hintCable');
+      el.disabled=!!used[type] || game.phase!=='running'||game.paused;
+      el.textContent=(type==='mijita'?'🌿 ¡Una mijita!':'💡 ¡Échame un cable!')+(used[type]?' · Usado':' · 1 disponible');
+    }
+  }
+  function useWildcard(type){
+    if(!game||game.phase!=='running'||game.paused)return;
+    const team=game.mode==='duel'?game.activeTeam:0;
+    if(game.wildcardsUsed[team][type])return;
+    const answer=questionFor(game.cursor).answer;
+    const letters=Array.from(answer).filter(ch=>/[a-záéíóúüñ]/i.test(ch));
+    const length=letters.length;
+    const clue=type==='mijita'
+       ? (length>=4?`¡Una mijita!: la segunda letra es «${letters[1].toUpperCase()}».`:`¡Una mijita!: la respuesta tiene ${length} letras.`)
+       : (length>=4?`¡Échame un cable!: tiene ${length} letras y termina en «${letters[length-1].toUpperCase()}».`:`¡Échame un cable!: la respuesta tiene ${length} letras.`);
+    game.wildcardsUsed[team][type]=true;
+    (game.hints[team][currentHintKey()] ||= []).push(clue);
+    renderHints();saveGame();sound('pass');
+  }
   function reveal(){if(!game || game.phase!=='running')return;const visible=!$('revealCard').classList.contains('is-hidden');$('revealCard').classList.toggle('is-hidden',visible);$('revealAnswer').textContent=questionFor(game.cursor).answer;$('revealButton').textContent=visible?'Ver solución':'Ocultar solución';if(visible){$('revealButton').innerHTML='<svg><use href="#i-eye"/></svg> Ver solución';}}
   function togglePause(){if(!game || game.phase!=='running')return;game.paused=!game.paused;lastTick=performance.now();renderTimer();renderQuestion();saveGame();notify(game.paused?'Partida en pausa.':'¡Reanudamos!');}
+  function makeConfetti(){const target=$('confetti');target.replaceChildren();for(let i=0;i<52;i++){
+    const piece=document.createElement('i');piece.style.left=`${(i*73)%100}%`;piece.style.animationDelay=`-${(i*0.17)%4}s`;
+    piece.style.animationDuration=`${3.3+(i%7)*.43}s`;piece.style.background=['#1da565','#fff7c2','#d4edb7','#f9f9fa'][i%4];target.append(piece);
+  }}
+  function printDiploma(){if(!game||game.mode!=='duel')return;
+    const [a,b]=game.teamScores, winner=a===b?'Ambos equipos':teamName(a>b?0:1);
+    const page=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Diploma Rosco 4D</title><style>body{font-family:system-ui;text-align:center;padding:50px;border:16px double #15955b;color:#164a33}h1{font-size:55px;margin:35px 0 0}h2{font-size:38px}p{font-size:22px}strong{color:#067747}@page{size:A4 landscape;margin:14mm}</style></head><body><p>IES SIDÓN · DÍA DE LA BANDERA DE ANDALUCÍA</p><h1>🏆 DIPLOMA 4D</h1><p>Se reconoce a</p><h2>${escapeHTML(winner)}</h2><p>por su participación en <strong>ROSCO 4D ANDALUCÍA</strong></p><p>${escapeHTML(ordinal[game.level])} · ${a} / ${b} aciertos</p><p>¡Con conocimiento, alegría y mucho arte!</p><p>________________________ · Docente</p></body></html>`;
+    const w=window.open('','_blank');if(!w){notify('Permite ventanas emergentes para imprimir el diploma.');return;}w.document.open();w.document.write(page);w.document.close();w.focus();w.print();
+  }
   function finishGame(reason){
     if(!game)return;
     stopTimer();game.phase='finished';game.reason=reason;clearSavedGame();
@@ -288,14 +377,18 @@
     if(game.mode==='duel'){
       const [a,b]=game.teamScores;
       const winner=a===b?'¡Empate! Gran trabajo de ambos equipos.':`¡Gana el equipo ${a>b?'verde':'blanco'}!`;
-      $('endTeamSummary').textContent=`${winner} · Equipo verde: ${a} aciertos · Equipo blanco: ${b} aciertos`;
+      $('endTeamSummary').textContent=`${winner} · ${teamName(0)}: ${a} aciertos · ${teamName(1)}: ${b} aciertos`;
+      const percentage=n=>Math.round(n/27*100);
+      $('endAwards').textContent=`🏆 ${a===b?'¡Empate con arte!':`¡Enhorabuena, ${teamName(a>b?0:1)}!`} · ${teamName(0)}: ${percentage(a)}% · ${teamName(1)}: ${percentage(b)}%`;
+    }else{
+      $('endAwards').textContent=`✨ ¡Qué arte! Habéis acertado el ${Math.round(c/27*100)}% del rosco.`;
     }
     const container=$('endLetters');container.replaceChildren();
     arrays.forEach((states,team)=>{
       const section=document.createElement('div');section.className='end-team-letters';
       if(game.mode==='duel'){
         const heading=document.createElement('strong');heading.className='end-team-label';
-        heading.textContent=`Equipo ${teamName(team)} · ${states.filter(s=>s==='correct').length} de 27`;
+        heading.textContent=`${teamName(team)} · ${states.filter(s=>s==='correct').length} de 27`;
         section.append(heading);
       }
       const letters=document.createElement('div');letters.className='end-letter-row';
@@ -305,10 +398,11 @@
       });
       section.append(letters);container.append(section);
     });
-    showScreen('end');sound('finish');
+    $('diplomaButton').classList.toggle('is-hidden',game.mode!=='duel');showScreen('end');makeConfetti();sound('finish');
   }
   function backToSetup(){if(game && game.phase!=='finished'){game.paused=true;saveGame();}showScreen('setup');updateResume();}
-  function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
+  function resume(){const saved=getSavedGame();if(!saved){notify('No hay una partida guardada.');updateResume();return;}game=saved;game.paused=true;selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;chooseLevel(selectedLevel);chooseMode(selectedMode);$('soloBankSelect').value=selectedSoloBank;duration=game.duration;$('timeSelect').value=String(duration);
+    selectedTeamNames=game.teamNames||['Equipo verde','Equipo blanco'];$('nameGreen').value=selectedTeamNames[0];$('nameWhite').value=selectedTeamNames[1];launchGame();notify('Partida recuperada. Pulsa «Reanudar» para continuar.');}
   function discard(){ask('¿Descartar la partida?','Se eliminará el progreso guardado en este navegador.',()=>{clearSavedGame();game=null;updateResume();notify('Partida descartada.');});}
   function fromNewGame(){const saved=getSavedGame();if(saved){ask('¿Comenzar de cero?','La partida guardada se sustituirá por una nueva.',initGame);}else initGame();}
 
@@ -322,6 +416,7 @@
   }
   function downloadPortable(){
     if(editorDirty){notify('Guarda primero la pregunta que estás editando.');$('editorError').textContent='Pulsa «Guardar esta pregunta» antes de preparar el HTML para la PDI.';return;}
+    const audit=auditQuestions();if(audit.issues.length){showAudit();notify('Corrige las preguntas señaladas antes de descargar el rosco.');return;}
     let html;
     if(window.ROSCO_PORTABLE_TEMPLATE_BASE64){
       const raw=atob(window.ROSCO_PORTABLE_TEMPLATE_BASE64);
@@ -337,7 +432,9 @@
       html='<!doctype html>\n'+doc.outerHTML;
     }else{notify('No se encuentra el módulo de exportación. Comprueba que la carpeta js esté completa.');return;}
     const today=new Date().toISOString().slice(0,10);
-    downloadBlob(new Blob([html],{type:'text/html;charset=utf-8'}),`ROSCO_4D_MIS_PREGUNTAS_PDI_${today}.html`);
+    const requested=$('portableFileName').value.trim().replace(/\.html?$/i,'');
+    const fileStem=(requested||'ROSCO_4D_IES_SIDON').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_ -]/gi,'').trim().replace(/\s+/g,'_').slice(0,68)||'ROSCO_4D';
+    downloadBlob(new Blob([html],{type:'text/html;charset=utf-8'}),`${fileStem}_${today}.html`);
     notify('¡Listo! Descargado tu HTML personalizado. Ábrelo en la PDI.');
   }
   function printStandaloneAnswers(){
@@ -410,10 +507,46 @@
     $('editorCheck').textContent=valid?'✓ La solución y las alternativas cumplen la pista':`⚠ Comprueba la solución y las alternativas: deben ${q.mode==='starts'?'empezar por':'contener'} «${q.letter}».`;
     $('editorCheck').className='editor-check '+(valid?'valid':'invalid');
   }
+  function auditQuestions(){
+    const issues=[], warnings=[];
+    for(const level of [1,2,3,4]){
+      const levelAnswers=new Map();
+      for(const team of ['green','white']){
+        const seen=new Set();
+        for(const [i,q] of bank[level][team].entries()){
+          const tag=`Nivel ${level} · ${team==='green'?'Verde':'Blanco'} · ${LETTERS[i]}`;
+          if(!validEntry(q,LETTERS[i]))issues.push(`${tag}: pregunta, respuesta o alternativas inválidas.`);
+          if(q && typeof q.answer==='string'){
+            const answer=norm(q.answer);
+            if(seen.has(answer))issues.push(`${tag}: respuesta repetida dentro del equipo.`);
+            seen.add(answer);
+            if(levelAnswers.has(answer))issues.push(`${tag}: respuesta duplicada con ${levelAnswers.get(answer)}.`);
+            else levelAnswers.set(answer,tag);
+            if(q.aliases?.some(a=>incompleteAlias(a,q.answer)))issues.push(`${tag}: alternativa incompleta (abreviación de la solución).`);
+          }
+          if(!q?.fact?.trim())warnings.push(`${tag}: se recomienda añadir una explicación didáctica.`);
+          if((q?.clue||'').trim().length<15)warnings.push(`${tag}: el enunciado es muy breve; revisa si es claro.`);
+        }
+      }
+    }
+    return {issues,warnings};
+  }
+  function showAudit(){
+    if(editorDirty){$('editorError').textContent='Guarda antes la pregunta abierta para incluirla en la revisión.';return;}
+    const {issues,warnings}=auditQuestions();
+    const report=$('auditReport'); report.replaceChildren();report.classList.remove('is-hidden');
+    const h=document.createElement('strong');h.textContent=issues.length?`⚠ ${issues.length} errores · ${warnings.length} avisos`:`✓ 216 preguntas revisadas · 0 errores · ${warnings.length} avisos`;
+    report.append(h);
+    for(const [kind,items] of [['error',issues],['aviso',warnings]]) for(const issue of items.slice(0,30)){
+       const p=document.createElement('p');p.textContent=`${kind==='error'?'⛔':'ℹ'} ${issue}`;report.append(p);
+    }
+    if(issues.length+warnings.length>30){const p=document.createElement('p');p.textContent='Se muestran los primeros 30 resultados. Corrige y vuelve a verificar.';report.append(p);}
+    report.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
   function saveEditor(ev){
     ev.preventDefault();const {level,team,letter}=editorLocation(),idx=LETTERS.indexOf(letter);const item=editorValues();
     if(!validEntry(item,letter)){
-      $('editorError').textContent=`La respuesta y TODAS sus alternativas deben ${item.mode==='starts'?'empezar por':'contener'} la letra ${letter} y tener al menos dos caracteres.`;return;
+      $('editorError').textContent=`La respuesta y TODAS sus alternativas deben ${item.mode==='starts'?'empezar por':'contener'} la letra ${letter} y ser palabras completas (no abreviaciones).`;return;
     }
     const opposite=team==='green'?'white':'green';
     if(bank[level][opposite].some(q=>norm(q.answer)===norm(item.answer))){
@@ -462,7 +595,10 @@
   }
 
   // Eventos de interfaz.
-  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
+  function listen(){document.querySelectorAll('.level-card').forEach(btn=>btn.addEventListener('click',()=>chooseLevel(btn.dataset.level)));document.querySelectorAll('#modeOptions button').forEach(btn=>btn.addEventListener('click',()=>chooseMode(btn.dataset.mode)));$('timeSelect').addEventListener('change',e=>{duration=Number(e.target.value);});$('soloBankSelect').addEventListener('change',e=>{selectedSoloBank=e.target.value;});$('startButton').addEventListener('click',fromNewGame);$('drawTeamButton').addEventListener('click',drawTeam);
+    $('pdiButton').addEventListener('click',togglePdi);$('hintMijita').addEventListener('click',()=>useWildcard('mijita'));
+    $('hintCable').addEventListener('click',()=>useWildcard('cable'));
+    $('checkBankButton').addEventListener('click',showAudit);$('diplomaButton').addEventListener('click',printDiploma);$('resumeButton').addEventListener('click',resume);$('discardButton').addEventListener('click',discard);$('helpButton').addEventListener('click',()=>openDialog('helpDialog'));$('teacherHelpButton').addEventListener('click',()=>openDialog('teacherHelpDialog'));$('editorGuideButton').addEventListener('click',()=>{closeDialog('editorDialog');openDialog('teacherHelpDialog');});$('printGuideButton').addEventListener('click',printTeacherGuide);$('downloadPortable').addEventListener('click',downloadPortable);$('editorButton').addEventListener('click',()=>{setupEditor();openDialog('editorDialog');});$('printButton').addEventListener('click',printAnswers);$('endAnswersButton').addEventListener('click',printAnswers);$('fullscreenButton').addEventListener('click',toggleFullscreen);$('soundButton').addEventListener('click',()=>{muted=!muted;safeWrite(KEYS.sound,!muted);renderSound();});$('correctButton').addEventListener('click',()=>mark('correct'));$('wrongButton').addEventListener('click',()=>mark('wrong'));$('passButton').addEventListener('click',pass);$('nextButton').addEventListener('click',next);$('checkInputButton').addEventListener('click',checkTyped);$('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTyped();}});$('answerInput').addEventListener('input',()=>{$('answerValidation').textContent='';$('answerValidation').classList.add('is-hidden');$('answerInput').removeAttribute('aria-invalid');$('correctButton').disabled=!!game?.paused || $('answerInput').value.trim().length>0;});$('revealButton').addEventListener('click',reveal);$('pauseButton').addEventListener('click',togglePause);$('backButton').addEventListener('click',backToSetup);$('restartButton').addEventListener('click',()=>ask('¿Reiniciar el rosco?','Se perderán los aciertos y fallos de esta partida.',()=>{selectedLevel=String(game.level);selectedMode=game.mode;selectedSoloBank=game.soloBank;duration=game.duration;initGame();}));$('playAgainButton').addEventListener('click',playAgain);$('changeLevelButton').addEventListener('click',()=>{game=null;showScreen('setup');updateResume();});$('editLevel').addEventListener('change',e=>editorChoose(e.target.value,editorSelection?.team??'green',editorSelection?.letter??'A'));
     $('editTeam').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,e.target.value,editorSelection?.letter??'A'));
     $('editLetter').addEventListener('change',e=>editorChoose(editorSelection?.level??selectedLevel,editorSelection?.team??'green',e.target.value));
     ['editMode','editClue','editAnswer','editAliases','editFact'].forEach(id=>$(id).addEventListener('input',()=>{editorDirty=true;renderEditorPreview();}));
@@ -472,6 +608,7 @@
   // SEGURIDAD DE EVALUACIÓN: sin atajos globales que puntúen al pulsar letras.
   // Solo se evalúa con «Comprobar»/Intro DENTRO de la casilla de respuesta
   // o con los botones explícitos de corrección del docente.
-  function boot(){makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');}
+  function boot(){makePreview();initWheel();listen();renderSound();chooseMode(selectedMode);updateResume();showScreen('setup');document.body.classList.toggle('pdi-mode',pdiMode);$('pdiButton').setAttribute('aria-pressed',String(pdiMode));$('pdiButton').textContent=pdiMode?'Vista normal':'Modo PDI';}
   boot();
 })();
+

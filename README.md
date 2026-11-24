@@ -1,26 +1,26 @@
-# ROSCO 4D ANDALUCÍA · IES SIDÓN · V4.5
+# Rosco 4D Andalucía · V4.6 · IES Sidón
 
-## Actualización de la validación de respuestas
+Juego estático para PDI, desde el proyecto V4.5. Sin cuentas ni servidor. **216 preguntas**: 27 por equipo × 2 equipos × 4 dificultades.
 
-Se ha comprobado el banco de **216 preguntas (4 niveles × 2 equipos × 27 letras)**, limpiando 10 alternativas que no respetaban «Empieza por» o «Contiene la». La comprobación requiere una coincidencia completa con la solución o con una alternativa válida.
+## NOVEDADES V4.6
 
-### Respuesta escrita
-- Teclear **solo A, B, Q o cualquier otra letra** y pulsar «Comprobar»: **Respuesta incompleta**, 0 puntos y pregunta sin cerrar; se puede escribir la palabra entera.
-- Escribir una respuesta completa incorrecta: fallo.
-- Escribir la respuesta completa correcta (o alternativa válida): acierto.
-- Cuando hay texto en la casilla, el botón manual **Correcto** queda desactivado para evitar aciertos involuntarios. Los botones docentes siguen funcionando con respuestas orales cuando la casilla está vacía.
-- En la tarjeta de resultado se indica lo que se escribió o que la evaluación fue manual.
+- Cronómetro de equipo independiente en duelo; solo consume el equipo activo; se detiene durante la corrección, pausa o al finalizar sus 27 letras. Al agotarse el tiempo, el otro equipo puede seguir usando el suyo.
+- Modo PDI de alto contraste visual, controles amplios y preguntas grandes; alterna desde el juego.
+- Nombres propios y sorteo opcional del equipo inicial.
+- Comodines: una «mijita» (segunda letra) y «¡Échame un cable!» (longitud y última letra), una vez por equipo; la ayuda no puntúa.
+- Pantalla de victoria con porcentajes, confeti y diploma imprimible.
+- Verificador docente de las 216 preguntas, revisa pista, respuesta, alternativas y duplicados antes de exportar.
+- Exportación con nombre personalizado: UN HTML autocontenido que funciona sin conexión en una PDI.
+- Respuestas: comparación exacta de la palabra o expresión; una sola letra o respuesta abreviada NO puntúa. Se han retirado las alternativas que solo eran prefijos incompletos de respuestas más largas.
 
-### Actualización de GitHub y PDI
-- El archivo `index.html` contiene preguntas, estilos, logo, código y exportador. Para actualizar GitHub, sustituye el `index.html` anterior.
-- Debe aparecer **V4.5 · VERIFICADA** en la cabecera; si no aparece, estás usando un archivo anterior.
-- Abre la página de nuevo con **Ctrl + F5**; los HTML personalizados descargados antes NO se corrigen solos. Genera el HTML PDI desde esta versión.
+## USO
+1. Abre `index.html` en Chrome, Firefox o Edge. También puedes publicarlo en GitHub Pages.
+2. Selecciona dificultad, duelo o clase; si hay duelo escribe nombres y sortea el comienzo.
+3. Juega en la PDI, pulsa «Modo PDI» para facilitar el uso táctil.
+4. En Editor docente, cambia nivel, equipo, letra, pista, solución y explicación; guarda cada pregunta.
+5. Pulsa «Verificar las 216 preguntas» y después «Descargar mi rosco para PDI (.html)».
+6. Abre el HTML obtenido directamente en la PDI o compártelo con el profesorado. ¡No depende de carpetas ni de Internet!
 
-### Profesorado
-- Se mantienen los niveles «¡Con salero!», «¡Olé tu arte!», «¡Aquí hay duende!» y «¡Quillo, qué nivelazo!».
-- Se conservan 27 preguntas distintas para cada uno de los dos equipos en cada nivel, con 216 preguntas totales.
-- Para personalizar las preguntas: abre `index.html`, entra en **Editor docente**, cambia letra / equipo / nivel, guarda, pulsa **Descargar mi rosco para PDI** y abre el HTML resultante en el aula.
-- El juego funciona también sin Internet en cualquier navegador moderno. En un ordenador compartido, cada docente debería conservar su archivo HTML personal.
+**Recuerda:** el navegador guarda cambios locales solo en ese navegador, pero el HTML descargado los incorpora. Para usar nuevas ediciones en otra PDI, descarga un nuevo HTML.
 
-### Contenido
-La V4.5 se basa en la V4.4 conservando el aspecto visual, el logo IES Sidón, el juego independiente por equipos y la guía. El archivo `js/questions.js` está incluido por transparencia y mantenimiento, pero el navegador ejecuta la versión integrada en `index.html`.
+La web conserva el solucionario, PDF de ayuda, los cuatro niveles con nombres andaluces y el logo del IES Sidón.
