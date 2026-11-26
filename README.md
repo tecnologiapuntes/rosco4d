@@ -1,34 +1,40 @@
-# ROSCO 4D ANDALUCÍA — V5.2 · IES SIDÓN
+# Rosco 4D Andalucía — V5.3.2 · Cambio de turno visible
 
-Esta edición parte de la V5.1 y **elimina íntegramente el lector automático de preguntas**. Conserva el diseño, las 216 preguntas, los cuatro niveles, dos equipos con roscos independientes, cronómetros, comodines, editor, vista previa, Deshacer, repaso de errores, exportación HTML y las dos ayudas docentes.
+Esta edición mantiene todas las funciones de la V5.3 y añade un **cartel a pantalla completa de cambio de turno** en los duelos cuando se produce Pasapalabra, un fallo (tras ver la respuesta y pulsar continuar) o se agota el tiempo de un equipo. Aparece durante 1,9 segundos, se puede cerrar tocándolo y **el cronómetro queda detenido durante el cartel**. Todo en verdes de Andalucía.
 
-## Cambios en V5.2
+La misma función está incluida en `index.html`, en `Rosco_4D_V5_3_1_LISTO_PARA_PDI.html` y en los HTML personalizados que exporte el profesorado. No se han modificado los bancos de 216 preguntas, las reglas de puntuación ni el editor.
 
-- **Sin lector de voz**: se han eliminado sus controles y el motor de lectura de la web principal y del archivo portable.
-- **Modo presentador**: mantiene la pregunta ampliada y el control manual de Correcto, Fallo y Pasapalabra.
-- **Avisos de tiempo**: independientes del lector; se pueden activar/desactivar en la portada. Siguen siendo visuales y, si el sonido del juego está activo, reproducen un aviso breve a 30 y 10 segundos.
-- **Exportación docente**: el HTML personalizado generado por cada profesor tampoco incluye el lector.
+## Publicación
 
-## Para actualizar GitHub Pages
+Para actualizar el sitio ya publicado en GitHub Pages, basta con sustituir el archivo `index.html`, hacer **Commit to main → Push origin**. Los archivos adicionales de este ZIP sirven para uso offline y documentación.
 
-1. Abre el repositorio limpio desde GitHub Desktop, en la rama `main`.
-2. Para publicar el cambio sin conflictos, copia **únicamente `index.html`** desde el ZIP `SOLO_CAMBIOS` a la raíz del repositorio.
-3. Haz **Commit to main** y después **Push origin**.
-4. Abre la web y comprueba que indique **V5.2 · PDI**. Si sigues viendo la antigua, prueba Ctrl+F5.
+# Rosco 4D Andalucía — V5.3 · Vista Concurso · IES Sidón
 
-El archivo `index.html` contiene todo lo necesario: estilos, preguntas, código y la plantilla para descargar un HTML personalizado. No es necesario reemplazar CSS ni JS para publicar esta versión.
 
-## Para el profesorado
+## Novedades V5.3
 
-- Entra en **Editor docente**, modifica las preguntas, guarda cada una y elige **Descargar mi rosco para PDI**.
-- El archivo descargado funciona como HTML independiente en Chrome o Edge, con o sin Internet.
-- La sección **Ayuda para docentes** conserva dos procedimientos: desde la web y a partir de un ZIP.
-- Para usar el modo presentador, pulsa el botón correspondiente durante el juego. Los avisos de tiempo se controlan en la portada.
+1. **Vista Concurso** (predeterminada en duelo): muestra los dos roscos de 27 letras simultáneamente.
+2. **Vista clásica**: se puede elegir en la portada o cambiar durante el juego, sin reiniciar.
+3. **Turnos visibles**: equipo activo destacado, el otro rosco sigue presente.
+4. **Adaptación para PDI**: estilos específicos para pantallas 1024×768, 1366×768 y Full HD y controles táctiles.
+5. **Cronómetros**: dos contadores visibles dentro de los paneles de cada equipo, avisos de 30 y 10 segundos.
+7. **Final de duelo**: compara gráficamente los dos roscos completos y sus resultados.
 
-## Contenido
+## Publicación GitHub Pages
 
-- `index.html`: web principal V5.2 autónoma para GitHub Pages.
-- `Rosco_4D_V5_2_LISTO_PARA_PDI.html`: juego autónomo con las preguntas originales.
-- `js/app.js`, `js/questions.js`, `js/portable-template.js`, `css/styles.css`: fuentes para futuras ediciones, sincronizadas con la web.
-- `solucionario.html`: solucionario.
-- `GUIA_DOCENTE.html` y guías PDF: procedimientos para editar, guardar y usar el juego.
+En la rama `main`, sustituir únicamente `index.html`; hacer Commit → Push. El archivo principal es autosuficiente: incluye los estilos, las preguntas y la plantilla para exportar HTML. La versión completa incluye asimismo las guías y el solucionario.
+
+## Para usar sin Internet
+
+Abrir `Rosco_4D_V5_3_LISTO_PARA_PDI.html` en Chrome o Edge. También se puede abrir la web, editar las preguntas y descargar un HTML personalizado. Cada archivo incluye las dos vistas y todas las mejoras.
+
+## Comportamiento de respuestas
+
+La respuesta escrita solo se acepta al coincidir con una solución completa válida. Una letra aislada nunca puntúa. Los botones Correcto/Fallo/Pasapalabra de la PDI son acciones explícitas del docente.
+
+
+## V5.3.2 — Dos vistas, roscos siempre visibles
+
+Se ha eliminado el modo presentador por resultar redundante y ocultar el rosco en la vista clásica. Ahora están disponibles únicamente dos distribuciones de juego: **Vista clásica** (rosco grande del equipo activo) y **Vista Concurso** (dos roscos simultáneos en duelo). El botón **Ampliar para PDI** aumenta el tamaño del texto y los controles, sin ocultar ningún rosco. Se conservan las 216 preguntas, las ayudas, la descarga HTML personalizada, los cronómetros, los avisos, Deshacer y el cartel de cambio de equipo.
+
+Para publicar en GitHub Pages: sustituye solamente `index.html` y realiza Commit y Push en la rama principal. Los HTML personalizados anteriores no se actualizan automáticamente: vuelve a descargarlos desde la nueva versión.
